@@ -1,0 +1,13 @@
+{
+    "skipLibCheck": true,
+    "compilerOptions": {
+        "target": "ESNext",
+        "experimentalDecorators": true,
+        "module": "ESNext",
+        "moduleResolution": "Node16",
+        "resolveJsonModule": true,
+        "paths": {
+            "@/*": ["./*"]
+        }
+    }
+}

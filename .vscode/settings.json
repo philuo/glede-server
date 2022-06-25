@@ -1,0 +1,12 @@
+{
+    "files.exclude": {
+        ".git": true,
+        ".DS_Store": true,
+        ".editorconfig": true,
+        ".eslint*": true,
+        ".npmignore": true,
+        "node_modules": true,
+        // ".npmrc": true,
+        // "tsconfig.json": true
+    }
+}

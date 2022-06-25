@@ -1,0 +1,121 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "happy-pub-server API",
+    "description": "泡泡校园业务API",
+    "version": "1.0.0"
+  },
+  "components": {
+    "schemas": {}
+  },
+  "paths": {
+    "/api/user/all": {
+      "get": {
+        "summary": "获取全部用户摘要列表",
+        "description": "超管权限接口, 获取全部信息",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "title": "状态码",
+                      "description": "0 正常 | 1 参数校验错误 | >= 2 自定义错误",
+                      "type": "integer"
+                    },
+                    "data": {
+                      "description": "响应的数据结构, code > 0 时值必须为null",
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "title": "用户列表信息",
+                          "description": "用户Id,...",
+                          "type": "array",
+                          "items": {}
+                        }
+                      },
+                      "required": [
+                        "list"
+                      ]
+                    },
+                    "msg": {
+                      "description": "code > 0 必选, 用来描述错误信息, 📢不要暴露服务器的敏感处理流程",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user/{id}": {
+      "get": {
+        "summary": "获取指定用户摘要列表",
+        "description": "管理员权限接口, 获取指定用户的非敏感信息",
+        "parameters": [
+          {
+            "schema": {
+              "title": "用户uid",
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "title": "状态码",
+                      "description": "0 正常 | 1 参数校验错误 | >= 2 自定义错误",
+                      "type": "integer"
+                    },
+                    "data": {
+                      "description": "响应的数据结构, code > 0 时值必须为null",
+                      "type": "object"
+                    },
+                    "msg": {
+                      "description": "code > 0 必选, 用来描述错误信息, 📢不要暴露服务器的敏感处理流程",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3020"
+    },
+    {
+      "url": "https://app.plog.top"
+    }
+  ],
+  "externalDocs": {
+    "url": "https://plog.top",
+    "description": "访问预发布环境"
+  }
+}

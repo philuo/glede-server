@@ -1,0 +1,32 @@
+{
+  "name": "@yuo/glede-server",
+  "version": "1.0.0",
+  "description": "Web业务服务器",
+  "author": "Perfumere<1061393710@qq.com>",
+  "main": "index.ts",
+  "types": "types/export.d.ts",
+  "engines": {
+    "node": ">=16.15.0"
+  },
+  "homepage": "https://github.com/philuo/glede-server",
+  "keywords": [
+    "http",
+    "webserver",
+    "fastify"
+  ],
+  "scripts": {
+    "start": "tsx watch tests/app"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@fastify/swagger": "^7.4.0",
+    "@yuo/ip2region": "^1.0.0",
+    "fastify": "^4.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^3.6.0"
+  }
+}
