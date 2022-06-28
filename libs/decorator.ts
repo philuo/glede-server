@@ -3,6 +3,7 @@
  * @date 2022-06-24
  * @author Perfumere
  */
+
 import {
     __genSymbol,
     __genSchema,
@@ -11,7 +12,6 @@ import {
 } from './util';
 
 const __methodOpts = { version: '' };
-
 
 /**
  * 设置跨域资源共享

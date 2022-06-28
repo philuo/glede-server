@@ -5,12 +5,13 @@
  */
 
 import { mkdirSync, existsSync, readFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
+import { __initMongo, __initRedis, getRedisInstance } from './db';
 import IpReader from '@yuo/ip2region';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 /**
- * HTTP通信 [JSON校验](https://json-schema.apifox.cn/#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B)
+ * HTTP通信 [JSON校验](https://json-schema.apifox.cn/#数据类型)
  * 
  * [已支持的类型校验](../types/index.d.ts)
  */
@@ -51,18 +52,12 @@ export function __throwError(message: string) {
 }
 
 export function __getIp(req: FastifyRequest) {
-    let ip = '';
-
     if (req.headers['x-real-ip']) {
-        ip = req.headers['x-real-ip'] as string;
+        return req.headers['x-real-ip'] as string;
     }
-    else if (__checkType(req.ip, 'string')) {
-        ip = req.ip.split(':').slice(-1)[0];
+    if (__checkType(req.ip, 'string')) {
+        return req.ip.split(':').slice(-1)[0];
     }
-
-    const result = ip.match(/(?:\d{1,3}\.){3}\d{1,3}/);
-
-    return result ? result[0] : '';
 }
 
 export function __genReqUtils(req: FastifyRequest) {
@@ -85,21 +80,13 @@ export function __genReqUtils(req: FastifyRequest) {
     };
 };
 
-export function __genResUtils(res: FastifyReply) {
-    return {
-        refreshToken() {
-            // 发送新的Token
-        },
-        hasHeader: res.hasHeader,
-        setHeader: res.header,
-        removeHeader: res.removeHeader
-    };
-}
-
 export function __genHandlerUtils(req: FastifyRequest, res: FastifyReply) {
     return {
         ...__genReqUtils(req),
-        ...__genResUtils(res)
+        mq: getRedisInstance(),
+        hasHeader: res.hasHeader,
+        setHeader: res.header,
+        removeHeader: res.removeHeader
     };
 }
 
@@ -131,12 +118,27 @@ export function __mkDir(opts: GledeServerOpts) {
     }
 }
 
+export function __initDatabase(opts: GledeServerOpts) {
+    if (opts.redis) {
+        __initRedis(opts.redis);
+    }
+    if (opts.mongodb) {
+        __initMongo(opts.mongodb.url, opts.mongodb.options);
+    }
+}
+
 export function __mixinServerOpts(opts: GledeServerOpts) {
     const options = opts || {};
 
     if (__checkType(options.conf, 'string')) {
         try {
-            Object.assign(options, JSON.parse(readFileSync(options.conf, 'utf-8')))
+            if (options.conf.endsWith('.json')) {
+                Object.assign(options, JSON.parse(readFileSync(options.conf, 'utf-8')));
+            }
+            else if (options.conf.endsWith('.ts') || options.conf.endsWith('.js')) {
+                Object.assign(options, require(resolve(options.conf)).default);
+            }
+
             Reflect.deleteProperty(options, 'conf');
         }
         catch {

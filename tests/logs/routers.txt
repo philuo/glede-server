@@ -1,23 +1,5 @@
-└── /
-    ├── docs (GET)
-    │   docs (HEAD)
-    │   └── / (GET)
-    │       / (HEAD)
-    │       ├── * (GET)
-    │       │   * (HEAD)
-    │       ├── uiConfig (GET)
-    │       │   uiConfig (HEAD)
-    │       ├── initOAuth (GET)
-    │       │   initOAuth (HEAD)
-    │       ├── json (GET)
-    │       │   json (HEAD)
-    │       ├── yaml (GET)
-    │       │   yaml (HEAD)
-    │       └── static/
-    │           └── * (GET)
-    │               * (HEAD)
-    └── api/user/
-        ├── :id (GET)
-        │   :id (HEAD)
-        └── all (GET)
-            all (HEAD)
+└── /api/user/
+    ├── :id (GET)
+    │   :id (HEAD)
+    └── all (GET)
+        all (HEAD)

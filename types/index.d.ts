@@ -23,7 +23,7 @@ declare interface GledeReqData {
 
 declare type GledeSupportMethod = 'GET' | 'POST';
 declare type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
-type GledeRouterHandler = (data: GledeReqData, util: GledeUtil) => GledeResData;
+type GledeRouterHandler = (this: GledeUtil, data: GledeReqData) => GledeResData;
 
 interface RouterParams {
     subpath: string;
@@ -123,8 +123,20 @@ declare interface GledeServerOpts {
      * 生成日志配置
      */
     apiDocs?: any;
-}
 
+    /** redis config */
+    redis?: {
+        host?: string;
+        port?: number;
+        password?: string;
+    };
+
+    /** mongodb config */
+    mongodb?: {
+        url: string;
+        options?: any;
+    };
+}
 declare interface GledeUtil {
     /**
      * 获取请求源的IPv4
@@ -150,11 +162,6 @@ declare interface GledeUtil {
      * 获得完整的请求头数据对象
      */
     getHeaders: () => Readonly<Record<GledeReqHeader, string> & Record<string, string>>;
-
-    /**
-     * 刷新Token
-     */
-    refreshToken: () => string;
 
     /**
      * 指定字段, 设置响应头
@@ -306,4 +313,25 @@ interface JsonSchemaAllOf {
 
 interface JsonSchemaNot {
     not: JsonSchema[];
+}
+
+declare type CollectionName = 'pv' | 'rdPerf' | 'rdErr' | 'rdBusi';
+
+declare interface MongoConf {
+    url: string;
+    dbName: string;
+    collectionName: Array<CollectionName>;
+}
+
+declare interface GledeModelOpts<T> {
+    /**
+     * 指定集合名, 默认集合名为
+     * Default: Model('name') -> names
+     */
+    collection?: string;
+
+    /**
+     * 添加Model静态方法
+     */
+    statics: T;
 }

@@ -5,57 +5,9 @@
  */
 
 import type { FastifyInstance } from 'fastify';
+import type { Model as _Model, ConnectOptions } from 'mongoose';
 
-interface GledeResError {
-    code: number;
-    data: null,
-    msg: string;
-}
-
-interface GledeResSuccess {
-    code: number;
-    data: Record<string, any>;
-}
-
-export type GledeResData = GledeResError | GledeResSuccess;
-
-type ReqContentHeader = 'accept-language' | 'accept-encoding' | 'accept' | 'range';
-type ReqOriginHeader = 'user-agent' | 'referer' | 'host' | 'x-real-ip';
-type ReqPayloadHeader = 'authorization' | 'cookie';
-type ReqCacheHeader = 'connection' | 'cache-control';
-
-export type GledeReqHeader = ReqContentHeader | ReqOriginHeader | ReqPayloadHeader | ReqCacheHeader;
-
-
-export interface GledeIpRegion {
-
-    /**
-     * 省份ID
-     */
-    pid: number;
-
-    /**
-     * 城市ID
-     */
-    cid: number;
-
-    /**
-     * 省份名
-     */
-    province: string;
-
-    /**
-     * 城市名
-     */
-    city: string;
-
-    /**
-     * 供应商
-     */
-    ips: string;
-}
-
-export interface GledeUtil {
+interface GledeUtil {
     /**
      * 获取请求源的IPv4
      */
@@ -82,11 +34,6 @@ export interface GledeUtil {
     getHeaders: () => Readonly<Record<GledeReqHeader, string> & Record<string, string>>;
 
     /**
-     * 刷新Token
-     */
-    refreshToken: () => string;
-
-    /**
      * 指定字段, 设置响应头
      */
     setHeader: (key: string, value: string) => void;
@@ -102,7 +49,15 @@ export interface GledeUtil {
     hasHeader: (key: string) => void;
 }
 
-export interface GledeServerOpts {
+interface GledeReqData {
+    body: Record<string, string>,
+    params: Record<string, string>;
+    query: Record<string, string>;
+}
+
+type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
+
+interface GledeServerOpts {
 
     /**
      * 配置文件路径
@@ -155,6 +110,19 @@ export interface GledeServerOpts {
      * 生成日志配置
      */
     apiDocs?: any;
+
+    /** redis config */
+    redis?: {
+        host?: string;
+        port?: number;
+        password?: string;
+    };
+
+    /** mongodb config */
+    mongodb?: {
+        url: string;
+        options?: ConnectOptions;
+    };
 }
 
 type JsonSchemaCombineType = 'array' | 'object';
@@ -232,7 +200,7 @@ interface JsonSchemaDescription {
     examples?: any[];
 }
 
-export type JsonSchema = ((JsonSchemaString | JosnSchemaNumric
+type JsonSchema = ((JsonSchemaString | JosnSchemaNumric
     | JosnSchemaObject | JosnSchemaArray | JsonSchemaNormal) & JsonSchemaDescription)
     | JsonSchemaAnyOf | JsonSchemaOneOf | JsonSchemaAllOf
     | JsonSchemaEnum | JsonSchemaNot;
@@ -247,31 +215,31 @@ interface GledeSchemaBase {
     /** 接口可视安全性设置 */
     security?: any[];
 }
-export interface GledeGetSchema extends GledeSchemaBase {
+interface GledeGetSchema extends GledeSchemaBase {
     response: JsonSchema;
     query?: JsonSchema;
     params?: JsonSchema;
 }
 
-export interface GledePostSchema extends GledeSchemaBase {
+interface GledePostSchema extends GledeSchemaBase {
     response: JsonSchema;
     body?: JsonSchema;
     params?: JsonSchema;
 }
 
-export type GledeSchema = GledeGetSchema | GledePostSchema;
+type GledeSchema = GledeGetSchema | GledePostSchema;
 
-export type GledeGetMethodOpts = {
+type GledeGetMethodOpts = {
     version?: string;
     schema?: GledeGetSchema;
 };
 
-export type GledePostMethodOpts = {
+type GledePostMethodOpts = {
     version?: string;
     schema?: GledePostSchema;
 };
 
-export type GledeMethodOpts = {
+type GledeMethodOpts = {
     version?: string;
     schema?: GledeSchema;
 };
@@ -292,10 +260,24 @@ interface JsonSchemaNot {
     not: JsonSchema[];
 }
 
+interface GledeModelOpts<T> {
+    /**
+     * 指定集合名, 默认集合名为
+     * Default: Model('name') -> names
+     */
+    collection?: string;
+
+    /**
+     * 添加Model静态方法
+     */
+    statics: T;
+}
+
+
 export function Server(
     opts: GledeServerOpts,
     cb?: (err?: Error, address?: string) => void
-): void;
+): FastifyInstance;
 
 export function Get(
     subpath: string,
@@ -322,3 +304,9 @@ export abstract class GledeRouter {
 export function getServerInstance(): FastifyInstance;
 
 export function printRouters(opts: GledeServerOpts): void;
+
+export function Model<T, K>(
+    name: string,
+    schema: T,
+    opts?: GledeModelOpts<K>
+): _Model<T, K>;
