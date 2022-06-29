@@ -4,7 +4,7 @@
  * @author Perfumere
  */
 
-import { __genSymbol, __checkType } from '../libs/util';
+import { __genSymbol, __checkType } from '../utils';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
 const CORS_ORIGIN = 'Access-Control-Allow-Origin';

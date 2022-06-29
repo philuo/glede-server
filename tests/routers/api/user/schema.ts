@@ -9,6 +9,17 @@ import type { GledeGetSchema, GledePostSchema } from "@/types/export";
 export const allSchema = {
     summary: '获取全部用户摘要列表',
     description: '超管权限接口, 获取全部信息',
+    query: {
+        type: 'object',
+        properties: {
+            name: {
+                title: '用户名字',
+                description: '用于判定xx',
+                type: 'integer'
+            }
+        },
+        required: ['test']
+    },
     response: {
         type: 'object',
         properties: {

@@ -75,6 +75,28 @@ export class Router extends GledeRouter {
 }
 ```
 
+## 装饰器介绍
+
+### 方法装饰器
+
+> 将Handler装载至路由
+
+- `@Get(url: string, { schema?: GledeGetSchema, version?: string })`
+- `@Post(url: string, { schema?: GledePostSchema, version?: string })`
+
+### 跨域装饰器
+
+> 设置需要跨域的域名、方法、是否允许携带cookie
+
+- `@Cors(origin: string | string[], method: string, credential?: boolean)`
+
+### 鉴权装饰器
+
+> 身份鉴权(noauth | user | admin | super | root), 是否允许Handler处理
+Default: noauth
+
+- `@NeedAuth(role: string)`
+
 ## 数据库操作
 
 [mongoose 操作文档](https://mongoosejs.com/docs/api/model.html)
@@ -214,9 +236,9 @@ export Router extends GledeRouter {
 }
 ```
 
-## TODO
+## 集成功能
 
-### Token
+### Token签发与验证
 
 - 实现分发（sign, unsign）
 
@@ -229,6 +251,14 @@ else fail -> else -> else fail -> else fail -> else fail
              if not ok then fail
 ```
 
+
+### 捆绑数据库链接
+
+- `mongoose`
+
+- `ioredis`
+
+
 ### 黑名单
 
 - `ip blklist`
@@ -238,6 +268,8 @@ else fail -> else -> else fail -> else fail -> else fail
 - `token blklist`
 
 `判黑条件：超管手动添加 / 即将过期且验证通过的Token`
+
+## TODO
 
 ### 定时任务
 
@@ -249,12 +281,6 @@ else fail -> else -> else fail -> else fail -> else fail
 - 邮件通知警告
 
 `触发条件: 程序判定新增IP黑名单`
-
-### 捆绑数据库链接
-
-- `mongoose`
-
-- `ioredis`
 
 ### 升级@yuo/ip2region
 

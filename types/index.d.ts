@@ -4,21 +4,24 @@
  * @author Perfumere
  */
 
+/** GledeRouterHandler 失败返回值类型 */
 interface GledeResError {
     code: number;
     data: null,
     msg: string;
 }
 
+/** GledeRouterHandler 成功返回值类型 */
 interface GledeResSuccess {
     code: number;
     data: Record<string, any>;
 }
 
+/** GledeRouterHandler 入参 */
 declare interface GledeReqData {
-    body: Record<string, string>,
-    params: Record<string, string>;
-    query: Record<string, string>;
+    body: Record<string, any>,
+    params: Record<string, any>;
+    query: Record<string, any>;
 }
 
 declare type GledeSupportMethod = 'GET' | 'POST';
@@ -135,6 +138,14 @@ declare interface GledeServerOpts {
     mongodb?: {
         url: string;
         options?: any;
+    };
+
+    /** token config */
+    token?: {
+        /** 分发加盐 */
+        salt: string;
+        /** 令牌有效期 */
+        period: number;
     };
 }
 declare interface GledeUtil {
@@ -334,4 +345,29 @@ declare interface GledeModelOpts<T> {
      * 添加Model静态方法
      */
     statics: T;
+}
+
+declare interface GledeTokenPayload {
+    /** 用户id */
+    uid?: string;
+    /** 生效时间, 秒级时间戳 */
+    nbf?: number;
+    /** 过期时间, 秒级时间戳 */
+    exp?: number;
+    /** 票据权限 */
+    role?: string;
+}
+
+declare interface GledeTokenUtil {
+    /** 签发令牌 */
+    sign(payload?: GledeTokenPayload): string;
+
+    /**
+     * 验证令牌
+     * @param token string
+     * @returns 验证状态
+     * `0、1验证通过, 1表示token即将过期`
+     * `2~5验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改`
+     */
+    verify(token: string): 0 | 1 | 2 | 3 | 4 | 5;
 }

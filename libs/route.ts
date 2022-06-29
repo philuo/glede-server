@@ -7,12 +7,14 @@
 import { resolve } from 'path';
 import { readdirSync, existsSync, writeFile } from 'fs';
 import {
+    __genTokenUtil,
     __genHandlerUtils,
     __getSymbols,
     __genSymbol,
     __genUrl,
-    __checkType
-} from './util';
+    __checkType,
+    __throwError
+} from '../utils';
 import { GledeRouter, getServerInstance } from './base';
 import { __preprocessRouter } from '../plugins';
 import type { FastifyInstance, FastifyRequest ,FastifyReply } from 'fastify';
@@ -23,7 +25,7 @@ import type { FastifyInstance, FastifyRequest ,FastifyReply } from 'fastify';
  */
 export function printRouters(opts: GledeServerOpts) {
     if (!getServerInstance()) {
-        console.log('启动服务后查看路由信息');
+        __throwError('printRouters should excute on server running');
         return null;
     }
 
@@ -49,6 +51,9 @@ export async function __registerRouter(
 ) {
     if (opts.apiDocs) {
         await __registerSwagger(server, opts);
+    }
+    if (opts.token) {
+        __genTokenUtil(opts);
     }
 
     for (const router of readdirSync(opts.routerDir)) {
@@ -126,15 +131,22 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
     }
 }
 
+/** 预处理失败的响应体 */
+const PREHANDL_ERR = {
+    code: 401,
+    data: null,
+    msg: 'noauth'
+};
+
 function __genRouterHandler(handler) {
     return async function (req: FastifyRequest, res: FastifyReply) {
         if (!__preprocessRouter(req, res, handler)) {
-            return;
+            return PREHANDL_ERR;
         }
 
         const { body, params, query } = req;
 
-        return handler.call(
+        return await handler.call(
             __genHandlerUtils(req, res),
             { body, params, query }
         );
@@ -144,9 +156,6 @@ function __genRouterHandler(handler) {
 async function __genRouterSend(_, res, payload: string) {
     const code = res.statusCode;
 
-    if (code === 401 || code >= 500) {
-        return payload;
-    }
     if (code < 200 || (code > 299 && code !== 304)) {
         if (!__checkType(payload, 'string')) {
             payload = '';

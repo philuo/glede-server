@@ -4,20 +4,44 @@
  * @author Perfumere
  */
 
-import { __genSymbol, __checkType } from '../libs/util';
+import {
+    __genSymbol,
+    __checkType,
+    __getToken,
+    __getTokenUtil,
+    getRedisInstance
+} from '../utils';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
-const authRole = ['root', 'super', 'admin', 'user'];
+/**
+ * TODO: Token黑名单, 用于：收录超管手动添加及即将过期的Token, 并设置过期时间
+ */
+// const TOKEN_BLKLIST = 'blk_auth';
+
+function __isValidToken(token: string, util: GledeTokenUtil) {
+    if (!token || util) {
+        return false;
+    }
+
+    const verfiyStatus = util.verify(token);
+
+    if (verfiyStatus !== 0 && verfiyStatus !== 1) {
+        return false;
+    }
+
+    // if (util.verify(token) === 1) {
+    // TODO: Refresh Token
+    // }
+
+    return true;
+}
 
 export function __preprocessAuth(req: FastifyRequest, res: FastifyReply, handler) {
     const auth = handler[__genSymbol('auth')];
 
-    if (__checkType(auth, 'string') && authRole.includes(auth)) {
-        // TODO
-        // req.headers['authorization']
-
-        // return false;
+    if (!__checkType(auth, 'string')) {
+        return true;
     }
 
-    return true;
+    return __isValidToken(__getToken(req), __getTokenUtil());
 }

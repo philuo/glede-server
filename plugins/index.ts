@@ -19,7 +19,6 @@ export function __preprocessRouter(req: FastifyRequest, res: FastifyReply, handl
     if (!__preprocessAuth(req, res, handler)) {
         return false;
     }
-
     if (!__preprocessCors(req, res, handler)) {
         return false;
     }

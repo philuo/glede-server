@@ -1,5 +1,11 @@
-└── /api/user/
-    ├── :id (GET)
-    │   :id (HEAD)
-    └── all (GET)
-        all (HEAD)
+└── /api/
+    ├── user
+    │   └── /all (GET)
+    │       /all (HEAD)
+    └── v
+        ├── 1/user/
+        │   └── :id (GET)
+        │       :id (HEAD)
+        └── 2/user/
+            └── :id (GET)
+                :id (HEAD)

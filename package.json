@@ -9,10 +9,14 @@
     "node": ">=16.15.0"
   },
   "homepage": "https://github.com/philuo/glede-server",
+  "bugs": {
+    "url": "https://github.com/philuo/glede-server",
+    "email": "developer@philuo.com"
+  },
   "keywords": [
-    "http",
-    "webserver",
-    "fastify"
+    "fastify",
+    "glede",
+    "glede-server"
   ],
   "scripts": {
     "start": "tsx watch tests/app"

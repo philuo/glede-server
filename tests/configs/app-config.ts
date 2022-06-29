@@ -16,7 +16,12 @@ const {
      * MongoDB 鉴权信息
      */
     MONGO_USER,
-    MONGO_AUTH
+    MONGO_AUTH,
+
+    /**
+     * Token 盐
+     */
+    TOKEN_SALT
 } = process.env;
 
 export default {
@@ -58,5 +63,9 @@ export default {
     },
     mongodb: {
         url: `mongodb://${MONGO_USER}:${MONGO_AUTH}@127.0.0.1:27017/localService`
+    },
+    token: {
+        salt: TOKEN_SALT,
+        period: 3600
     }
 };

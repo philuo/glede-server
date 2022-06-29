@@ -50,9 +50,9 @@ interface GledeUtil {
 }
 
 interface GledeReqData {
-    body: Record<string, string>,
-    params: Record<string, string>;
-    query: Record<string, string>;
+    body: Record<string, any>,
+    params: Record<string, any>;
+    query: Record<string, any>;
 }
 
 type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
@@ -122,6 +122,14 @@ interface GledeServerOpts {
     mongodb?: {
         url: string;
         options?: ConnectOptions;
+    };
+
+    /** token config */
+    token?: {
+        /** 分发加盐 */
+        salt: string;
+        /** 令牌有效期 */
+        period: number;
     };
 }
 
@@ -273,40 +281,122 @@ interface GledeModelOpts<T> {
     statics: T;
 }
 
+export interface GledeTokenPayload {
+    /** 用户id */
+    uid?: string;
+    /** 生效时间, 秒级时间戳 */
+    nbf?: number;
+    /** 过期时间, 秒级时间戳 */
+    exp?: number;
+    /** 票据权限 */
+    role?: string;
+}
 
+/**
+ * 创建GledeServer实例
+ */
 export function Server(
     opts: GledeServerOpts,
     cb?: (err?: Error, address?: string) => void
 ): FastifyInstance;
 
+/**
+ * GET方法装饰器
+ * @param subpath 路径名, 不要带/
+ * @param options GledeGetMethodOpts:`{version, schema}`
+ * 
+ * `version = v1 -> /v1/path/subpath`
+ *
+ * `version = v1 -> /api/v1/path/subpath`
+ * 
+ * `version = '' -> /path/subpath`
+ * 
+ * `version = '' -> /openapi/path/subpath`
+ * 
+ */
 export function Get(
     subpath: string,
     options?: GledeGetMethodOpts
 ): (target: any, name: any) => void;
 
+/**
+ * POST方法装饰器
+ * @param subpath 路径名, 不要带/
+ * @param options GledeGetMethodOpts:`{version, schema}`
+ * 
+ * `version = v1 -> /v1/path/subpath`
+ *
+ * `version = v1 -> /api/v1/path/subpath`
+ * 
+ * `version = '' -> /path/subpath`
+ * 
+ * `version = '' -> /openapi/path/subpath`
+ */
 export function Post(
     subpath: string,
     options?: GledePostMethodOpts
 ): (target: any, name: any) => void;
 
+/**
+ * [设置跨域资源共享](https://www.php.cn/manual/view/35589.html)
+ * @param origin Access-Control-Allow-Origin; Default: *
+ * @param method Access-Control-Allow-Methods; Default: `GET,POST`
+ * @param credential Access-Control-Allow-Credentials; `设置此项时要求origin 不能为 *`
+ */
 export function Cors(
     origin?: string | string[],
     method?: string,
     credential?: boolean
 ): (target: any, name: any) => void;
 
+/**
+ * 设置身份鉴权, Default: noauth
+ * @param level noauth | user | admin | super | root
+ */
 export function NeedAuth(level: GledeAuthLevel): (target: any, name: any) => void;
 
+/** 路由基类 */
 export abstract class GledeRouter {
-    readonly [prop: string]: (this: GledeUtil, data: GledeReqData) => GledeResData;
+    readonly [prop: string]: (this: GledeUtil, data: GledeReqData) => GledeResData | Promise<GledeResData>;
 }
 
+/** 获取GledeServer实例 */
 export function getServerInstance(): FastifyInstance;
 
+/**
+ * 打印路由树, 服务器运行时方法。 Default: logs/routers.txt
+ */
 export function printRouters(opts: GledeServerOpts): void;
 
+/**
+ * @param name Model名称
+ * @param schema Model格式校验
+ * @param opts.collection 可选, 指定MongoDB集合名称
+ * @param opts.statics 必选, 指定Model上的静态方法
+ */
 export function Model<T, K>(
     name: string,
     schema: T,
     opts?: GledeModelOpts<K>
 ): _Model<T, K>;
+
+export interface GledeTokenUtil {
+    /** 签发令牌 */
+    sign(payload?: GledeTokenPayload): string;
+
+    /**
+     * 验证令牌
+     * @param token string
+     * @returns 验证状态
+     * `0、1验证通过, 1表示token即将过期`
+     * `2~5验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改`
+     */
+    verify(token: string): 0 | 1 | 2 | 3 | 4 | 5;
+}
+
+/**
+ * 通过配置获取对应的Token工具
+ * @param opts.salt 秘钥字符串
+ * @param opts.period 有效时长
+ */
+export function genTokenUtil(opts: GledeServerOpts['token']): GledeTokenUtil;

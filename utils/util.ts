@@ -32,7 +32,10 @@ export function __genSchema(schema: any) {
                     },
                     data: {
                         description: '响应的数据结构, code > 0 时值必须为null',
-                        ...schema.response
+                        oneOf: [
+                            { ...schema.response },
+                            { type: 'null' }
+                        ]
                     },
                     msg: {
                         description: 'code > 0 必选, 用来描述错误信息, 📢不要暴露服务器的敏感处理流程',
@@ -60,6 +63,14 @@ export function __getIp(req: FastifyRequest) {
     }
 }
 
+export function __getToken(req: FastifyRequest) {
+    if (!req.headers.authorization) {
+        return '';
+    }
+
+    return req.headers.authorization.substring(7);
+}
+
 export function __genReqUtils(req: FastifyRequest) {
     return {
         getIp() {
@@ -69,7 +80,7 @@ export function __genReqUtils(req: FastifyRequest) {
             IpReader(ip || __getIp(req))
         },
         getToken() {
-            return req.headers.authorization || '';
+            return __getToken(req);
         },
         getHeader(key: string) {
             return req.headers[key];
@@ -84,9 +95,9 @@ export function __genHandlerUtils(req: FastifyRequest, res: FastifyReply) {
     return {
         ...__genReqUtils(req),
         mq: getRedisInstance(),
-        hasHeader: res.hasHeader,
-        setHeader: res.header,
-        removeHeader: res.removeHeader
+        hasHeader: res.hasHeader.bind(res),
+        setHeader: res.header.bind(res),
+        removeHeader: res.removeHeader.bind(res)
     };
 }
 
@@ -173,11 +184,7 @@ export function __genUrl(
  * null、undefined、boolean、string、number、set、map、
  * object、symbol、array、function、bigint、weakmap、weakset
  */
-export function __checkType (target: any, type: string) {
-    if (!type) {
-        return false;
-    }
-
+export function __checkType(target: any, type: string) {
     if (type !== 'object' && typeof target === type) {
         return true;
     }

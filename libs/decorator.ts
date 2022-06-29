@@ -9,12 +9,13 @@ import {
     __genSchema,
     __throwError,
     __checkType
-} from './util';
+} from '../utils';
 
 const __methodOpts = { version: '' };
+const authRole = ['root', 'super', 'admin', 'user', 'noauth'];
 
 /**
- * 设置跨域资源共享
+ * 设置身份鉴权
  */
 export function NeedAuth(level: GledeAuthLevel) {
     const authSymbol = __genSymbol('auth');
@@ -22,6 +23,9 @@ export function NeedAuth(level: GledeAuthLevel) {
     return function (target, name) {
         if (target[name][authSymbol]) {
             __throwError(`@NeedAuth has already exists on handler ${name}`);
+        }
+        if (!authRole.includes(level)) {
+            __throwError(`@NeedAuth receive error role on handler ${name}`);
         }
         if (!level || level === 'noauth') {
             return;
