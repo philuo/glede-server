@@ -9,21 +9,19 @@ import { allSchema, singleSchema } from './schema';
 // import Cat from '@/tests/controllers/cat';
 
 export class Router extends GledeRouter {
-    @Get('/all', { schema: allSchema }) @NeedAuth('super')
-    getAll (this: GledeUtil, data: GledeReqData): GledeResData {
-        return {
-            code: 0,
-            data: {
-                list: [
-                    // ...
-                ]
-            }
-        }
+    @Get('/all', { schema: allSchema }) @NeedAuth('noauth')
+    getAll (this: GledeThis, data: GledeReqData) {
+        // no return sames like follow:
+        // return;
+        // return null;
+        // return undefined;
+        // return { code: 0, data: null };
     }
 
     // /api/v1/user/:id
-    @Get('/:id', { schema: singleSchema, version: 'v1' }) @NeedAuth('noauth')
-    async getUserV1 (this: GledeUtil, data: GledeReqData): Promise<GledeResData> {
+    @Cors('https://philuo.com')
+    @Get('/:id', { schema: singleSchema, version: 'v1' })
+    async getUserV1 (this: GledeThis, data: GledeReqData): Promise<GledeResData> {
         // this.setHeader('x-user-agent', 'wtf');
         // this.hasHeader('referer');
         // this.removeHeader('content-encoding');
@@ -47,7 +45,7 @@ export class Router extends GledeRouter {
 
     // /api/v2/user/:id
     @Get('/:id', { schema: singleSchema, version: 'v2' }) @NeedAuth('admin')
-    getUserV2 (this: GledeUtil, data: GledeReqData): GledeResData {
+    getUserV2 (this: GledeThis, data: GledeReqData): GledeResData {
         // this.setHeader('x-user-agent', 'wtf');
         // this.hasHeader('referer');
         // this.removeHeader('content-encoding');

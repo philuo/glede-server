@@ -34,5 +34,6 @@ export function getServerInstance() {
  * [路由基类](https://www.fastify.cn/docs/latest/Routes/)
  */
 export abstract class GledeRouter {
-    readonly [prop: string]: (this: GledeUtil, data: GledeReqData) => GledeResData | Promise<GledeResData>;
+    readonly [prop: string]: (this: GledeThis, data: GledeReqData) => GledeResData | Promise<GledeResData>
+        | void | Promise<void>;
 }

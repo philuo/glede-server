@@ -7,6 +7,7 @@
 import { resolve } from 'path';
 import { readdirSync, existsSync, writeFile } from 'fs';
 import {
+    __genMailer,
     __genTokenUtil,
     __genHandlerUtils,
     __getSymbols,
@@ -21,7 +22,6 @@ import type { FastifyInstance, FastifyRequest ,FastifyReply } from 'fastify';
 
 /**
  * 获取路由信息, 默认记录在logs/routers.txt
- * @returns void
  */
 export function printRouters(opts: GledeServerOpts) {
     if (!getServerInstance()) {
@@ -39,22 +39,45 @@ async function __registerSwagger(app: FastifyInstance, opts: GledeServerOpts) {
     await app.register(import('@fastify/swagger'), opts.apiDocs);
 }
 
+async function __registryPlugins(app: FastifyInstance, opts: GledeServerOpts) {
+    if (opts.apiDocs) {
+        await __registerSwagger(app, opts);
+    }
+    if (opts.token) {
+        __genTokenUtil(opts);
+    }
+    if (opts.mailer) {
+        __genMailer(opts);
+    }
+}
+
+function __registryReadyCb(
+    app: FastifyInstance,
+    opts: GledeServerOpts,
+    cb: (_: Error, adr: string) => void
+) {
+    const callback = __checkType(cb, 'function')
+                ? cb : (_, adr) => !_ && console.log(`GledeServer is running at ${adr}`);
+
+    app.listen({ port: opts.port, host: opts.host }, callback);
+    app.ready(_ => {
+        if (__checkType(app.swagger, 'function')) {
+            __genInfoFile('apis.json', JSON.stringify(app.swagger(), null, 2), opts);
+        }
+
+        printRouters(opts);
+    });
+}
+
 /**
  * 注册路由信息
- * Default: path = 'routers'
- * @param path 路由目录路径
  */
 export async function __registerRouter(
     server: FastifyInstance,
     opts: GledeServerOpts,
     cb: (_: Error, adr: string) => void
 ) {
-    if (opts.apiDocs) {
-        await __registerSwagger(server, opts);
-    }
-    if (opts.token) {
-        __genTokenUtil(opts);
-    }
+    await __registryPlugins(server, opts);
 
     for (const router of readdirSync(opts.routerDir)) {
         const route = resolve(opts.routerDir, router);
@@ -89,17 +112,7 @@ export async function __registerRouter(
         }
     }
 
-    const callback = __checkType(cb, 'function')
-                ? cb : (_, adr) => !_ && console.log(`GledeServer is running at ${adr}`);
-
-    server.listen({ port: opts.port, host: opts.host }, callback);
-    server.ready(_ => {
-        if (__checkType(server.swagger, 'function')) {
-            __genInfoFile('apis.json', JSON.stringify(server.swagger(), null, 2), opts);
-        }
-
-        printRouters(opts);
-    });
+    __registryReadyCb(server, opts, cb);
 }
 
 function __genRouter(app: FastifyInstance, target: Function, type: string, path: string) {
@@ -138,6 +151,12 @@ const PREHANDL_ERR = {
     msg: 'noauth'
 };
 
+/** 处理成功空响应 */
+const SUCCESS_EMPTY = {
+    code: 0,
+    data: null
+};
+
 function __genRouterHandler(handler) {
     return async function (req: FastifyRequest, res: FastifyReply) {
         if (!__preprocessRouter(req, res, handler)) {
@@ -146,10 +165,12 @@ function __genRouterHandler(handler) {
 
         const { body, params, query } = req;
 
-        return await handler.call(
+        const processRes = await handler.call(
             __genHandlerUtils(req, res),
             { body, params, query }
         );
+
+        return processRes || SUCCESS_EMPTY;
     };
 }
 
@@ -161,15 +182,10 @@ async function __genRouterSend(_, res, payload: string) {
             payload = '';
         }
 
-        const result = payload.match(/"message":\s*"([\s\S]+)"/);
-        const newPayload = {
-            code: 1,
-            data: null,
-            msg: result && result[1] ? result[1] : ''
-        };
+        const result = payload.match(/"message":"(.+)"/);
 
         res.code(200);
-        return JSON.stringify(newPayload);
+        return `{"code":1,"data":null,"msg":"${result && result[1]}"}`;
     }
 }
 

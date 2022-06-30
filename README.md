@@ -42,17 +42,13 @@ Server({ conf: 'configs/app.json' }, (err, address) => {
 ### 路由类
 
 ```ts
-import {
-    GledeRouter,
-    Get,
-    Post
-} from '@yuo/glede-server';
+import { GledeRouter, Get, Post } from '@yuo/glede-server';
 
 export class Router extends GledeRouter {
     // 注意方法不要使用箭头函数
     // 1. 依赖原型处理逻辑; 2. 注入依赖工具方便处理请求
 
-    getAllUser(this: GledeUtil, data: GledeReqData) {
+    getAllUser(this: GledeThis, data: GledeReqData) {
         // doSomething.
 
         if (noPass) {
@@ -70,6 +66,48 @@ export class Router extends GledeRouter {
             data: {
                 // ...
             }
+        };
+    }
+}
+```
+
+## [通用方法](./types/index.d.ts)
+
+- [GledeThis](./types/index.d.ts)
+
+- [GledeUtil](./types/export.d.ts)
+
+- [GledeStaticUtil](./types/export.d.ts)
+
+```ts
+// 目录: routers/api/post
+import { Post } from '../controllers';
+import { GledeUtil, Get, GledeRouter } from '@yuo/glede-server'
+
+export default class extends GledeRouter {
+    /**
+     * 删除动态
+     */
+    @Get('/del/:id') @NeedAuth('admin')
+    async delPost(this: GledeThis, data: GledeReqData) {
+
+        // Token鉴权通过, 这里可以看到用户身份
+        const token = this.getToken();
+        console.log(token.role, token.uid, token.exp);
+
+        // 非身份管理 admin / super / root, 只能删除自己的文章
+        if (!['admin', 'super', 'root'].includes(token.role)) {
+            Post.updateOne({ uid, postId: data.params.id });
+        }
+
+        // 否则直接删除
+        else {
+            Post.deleteOne({ postId: data.params.id });
+        }
+
+        return {
+            code: 0,
+            data: {}
         };
     }
 }
@@ -156,9 +194,13 @@ Cat.deleteOne({});
 // 4. 在Cat表中找到所有可以匹配删除的数据
 Cat.deleteMany({});
 
-// 5. 在Cat表中找到数据并更新, 不存在就插入注意不要用$set, 架构已自动处理
+// 5. 在Cat表中找到数据并更新, upsert默认为false, 设置为true不存在就插入
+// 注意原子操作, filter, { $set: { name: '小小明' } }, options
+Cat.updateOne({ name: '明' }, { $set: { name: '小明' } }, { upsert: true });
 Cat.updateOne({ name: '小明' }, {}, { upsert: true });
-Cat.updateMany({ name: '张三' }, {}, { upsert: true });
+
+// 所有男生, 分数 +1
+Cat.updateMany({ sex: 'male' }, { $inc: { score: 1 } });
 
 // 6. 多种操作, 一次通信。性能upup!
 // [https://mongoosejs.com/docs/api/model.html#model_Model.bulkWrite]
@@ -203,17 +245,14 @@ Cat.bulkWrite([
 // mkdir routers/${api | openapi}/${router | routerDir/index.ts}
 // api|openapi目录下存放路由可以是ts文件或目录, 文件内和目录内的Schema定义可相互引用
 // 示例 /routers/api/user/index.ts
-import {
-    getAllUsersSchema,
-    getAllUsersSchemaV2,
-} from './schema';
+import { getAllUsersSchema, getAllUsersSchemaV2 } from './schema';
 
 export Router extends GledeRouter {
     // version是接口的版本用于线上并行, 可选：默认 '', 如果出现版本区分可填写 v1, v2, ...
     // schema是参数的拦截校验, 必选：1. 客户端字段安全拦截 2. 增加序列化的性能10%~15% 3. 生成接口文档协同开发
     // match: /api/v1/:id
     @Get('/:id', { version: 'v1', schema: getAllUsersSchema }) @Cors()
-    getAllUsers(this: GledeUtil, data: GledeReqData): GledeResData {
+    getAllUsers(this: GledeThis, data: GledeReqData): GledeResData {
         return {
             code: 0,
             data: {
@@ -225,7 +264,7 @@ export Router extends GledeRouter {
     @Get('/:id', { version: 'v2', schema: getAllUsersSchemaV2 })
     @Post('/:id', { schema})
     @NeedAuth('super') @Cors('https://philuo.com', 'GET,POST')
-    getAllUsersV2(this: GledeUtil, data: GledeReqData): GledeResData {
+    getAllUsersV2(this: GledeThis, data: GledeReqData): GledeResData {
         return {
             code: 0,
             data: {

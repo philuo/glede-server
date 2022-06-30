@@ -1,30 +1,34 @@
 /**
- * @file GledeServer Based on Fastify
+ * @file GledeServer Entry
  * @date 2022-06-25
  * @author Perfumere
  */
-
-import { __gledeServer } from './libs/base';
-import { __registerRouter } from './libs/route';
-import { __mkDir, __mixinServerOpts, __initDatabase } from './utils';
-
-export function Server(opts: GledeServerOpts, cb?: (err?: Error, address?: string) => void) {
-    const options = __mixinServerOpts(opts);
-    const server = __gledeServer(options);
-
-    __initDatabase(options);
-    __mkDir(options);
-    __registerRouter(server, options, cb);
-
-    return server;
-}
-
-export { GledeRouter, getServerInstance } from './libs/base';
-export { printRouters } from './libs/route';
-export { Get, Post, Cors, NeedAuth } from './libs/decorator';
-export {
-    Model,
-    getMongoInstance,
+import {
     getRedisInstance,
-    genTokenUtil
+    getMongoInstance,
+    __getTokenUtil as getTokenUtil,
+    createTokenUtil,
+    createMailer,
+    sendMail
 } from './utils';
+
+export const GledeStaticUtil = {
+    getRedisInstance,
+    getMongoInstance,
+    createTokenUtil,
+    createMailer,
+};
+
+/**
+ * 运行时方法
+ */
+export const GledeUtil = {
+    getTokenUtil,
+    sendMail
+};
+
+export { Server } from './libs/init';
+export { printRouters } from './libs/route';
+export { GledeRouter, getServerInstance } from './libs/base';
+export { Get, Post, Cors, NeedAuth } from './libs/decorator';
+export { Model } from './utils';

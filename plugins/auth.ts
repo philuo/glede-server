@@ -8,8 +8,7 @@ import {
     __genSymbol,
     __checkType,
     __getToken,
-    __getTokenUtil,
-    getRedisInstance
+    __getTokenUtil
 } from '../utils';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 

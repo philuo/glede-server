@@ -6,8 +6,10 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { Model as _Model, ConnectOptions } from 'mongoose';
+import type { Mongoose } from 'mongoose'
+import type { Redis } from 'ioredis';
 
-interface GledeUtil {
+interface GledeThis {
     /**
      * 获取请求源的IPv4
      */
@@ -21,7 +23,7 @@ interface GledeUtil {
     /**
      * 获取认证信息
      */
-    getToken: () => string;
+    getToken: () => GledeTokenPayload;
 
     /**
      * 获得请求头中的指定字段
@@ -56,6 +58,39 @@ interface GledeReqData {
 }
 
 type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
+
+interface GledeTokenOpts {
+    /** 分发加盐 */
+    salt: string;
+    /** 令牌有效期 */
+    period: number;
+}
+
+interface GledeMailerOpts {
+    /**
+     * smtp地址
+     * for example: smtp.feishu.cn
+     */
+    host: string;
+
+    /**
+     * 登录邮箱URL
+     * for example: __test@philuo.com
+     */
+    user: string;
+
+    /**
+     * 登录邮箱密码
+     * tip: 写入环境变量中, 设置高权限只读
+     */
+    pass: string;
+
+    /**
+     * 邮箱单日最大发送数量（注意群发算一次）, 临界时切换下一个配置邮箱
+     * tip: 设置为邮箱额度的3/4
+     */
+    nums: number;
+}
 
 interface GledeServerOpts {
 
@@ -125,12 +160,10 @@ interface GledeServerOpts {
     };
 
     /** token config */
-    token?: {
-        /** 分发加盐 */
-        salt: string;
-        /** 令牌有效期 */
-        period: number;
-    };
+    token?: GledeTokenOpts;
+
+    /** mailer config */
+    mailer?: GledeMailerOpts[];
 }
 
 type JsonSchemaCombineType = 'array' | 'object';
@@ -357,7 +390,8 @@ export function NeedAuth(level: GledeAuthLevel): (target: any, name: any) => voi
 
 /** 路由基类 */
 export abstract class GledeRouter {
-    readonly [prop: string]: (this: GledeUtil, data: GledeReqData) => GledeResData | Promise<GledeResData>;
+    readonly [prop: string]: (this: GledeThis, data: GledeReqData) => GledeResData | Promise<GledeResData>
+        | void | Promise<void>;
 }
 
 /** 获取GledeServer实例 */
@@ -380,7 +414,7 @@ export function Model<T, K>(
     opts?: GledeModelOpts<K>
 ): _Model<T, K>;
 
-export interface GledeTokenUtil {
+interface GledeTokenUtil {
     /** 签发令牌 */
     sign(payload?: GledeTokenPayload): string;
 
@@ -394,9 +428,59 @@ export interface GledeTokenUtil {
     verify(token: string): 0 | 1 | 2 | 3 | 4 | 5;
 }
 
+interface GledeMailMessage {
+    /** 接收方邮件URL */
+    to: string;
+    /** 发送方邮件URL */
+    from?: string;
+    /** 邮件标题 */
+    subject?: string;
+    /** 邮件HTML内容, 与text字段互斥 */
+    html?: string;
+    /** 邮件文本内容, 与html字段互斥 */
+    text?: string;
+}
+
+interface GledeMailer {
+    sendMail: (message: GledeMailMessage) => any;
+}
+
 /**
- * 通过配置获取对应的Token工具
- * @param opts.salt 秘钥字符串
- * @param opts.period 有效时长
+ * 业务路由工具集
+ * `获取TokenUtil, 发送邮件`
  */
-export function genTokenUtil(opts: GledeServerOpts['token']): GledeTokenUtil;
+export namespace GledeUtil {
+
+    /** 获取TokenUtil */
+    export function getTokenUtil(): GledeTokenUtil;
+
+    /**
+     * 使用Mailer发送业务邮件
+     * for example: 验证码, 安全认证, 订阅提醒
+     */
+    export function sendMail(message: GledeMailMessage): any;
+}
+
+/**
+ * 业务静态工具
+ * `创建TokenUtil, Mailer, 获取数据库实例等`
+ */
+export namespace GledeStaticUtil {
+    /**
+     * 通过配置获取对应的Token工具
+     * @param opts.salt 秘钥字符串
+     * @param opts.period 有效时长
+     */
+    export function createTokenUtil(opts: GledeTokenOpts): GledeTokenUtil;
+
+    /**
+     * 通过配置获得Mailer, 使用限制由开发者自己实现
+     */
+    export function createMailer(opts: GledeMailerOpts): GledeMailer;
+
+    /** 获取Redis实例 */
+    export function getRedisInstance(): Redis;
+
+    /** 获取Mongoose实例 */
+    export function getMongoInstance(): Mongoose;
+}

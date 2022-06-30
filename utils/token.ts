@@ -10,7 +10,7 @@ function __serialize(content: GledeTokenPayload) {
     return Buffer.from(JSON.stringify(content)).toString('base64url');
 }
 
-function __unserialize(content: string): GledeTokenPayload {
+export function __unserialize(content: string): GledeTokenPayload {
     try {
         return JSON.parse(Buffer.from(content, 'base64url').toString());
     }
@@ -31,7 +31,7 @@ function __signature(content: string, salt: string) {
  * 2~5验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改
  */
 function __verify(token: string, salt: string, period: number) {
-    let [content, sign] = token.split('.');
+    const [content, sign] = token.split('.');
     const payload = __unserialize(content);
 
     // 载体解析错误
@@ -68,8 +68,8 @@ function __verify(token: string, salt: string, period: number) {
     return 0;
 }
 
-export function genTokenUtil(opts: GledeServerOpts) {
-    const { salt, period } = opts.token;
+export function createTokenUtil(opts: GledeTokenOpts) {
+    const { salt, period } = opts;
 
     return {
         sign(payload?: GledeTokenPayload) {
@@ -97,7 +97,7 @@ export function __getTokenUtil() {
 
 export function __genTokenUtil(opts: GledeServerOpts) {
     if (!tokenUtil) {
-        tokenUtil = genTokenUtil(opts);
+        tokenUtil = createTokenUtil(opts.token);
     }
 
     return tokenUtil;

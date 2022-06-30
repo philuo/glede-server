@@ -4,15 +4,26 @@
  * @author Perfumere
  */
 
-import { Server } from '../index';
-import Cat from './controllers/cat';
+import { Server, GledeUtil, GledeStaticUtil } from '../index';
+// import Cat from './controllers/cat';
 
+// const app = Server({ conf: 'tests/configs/app.json' });
+const app = Server({ conf: 'tests/configs/app-config.ts' });
+
+// After Server is start
+// GledeStaticUtil.getMongoInstance(); // 获取Mongoose实例
+// GledeStaticUtil.getRedisInstance(); // 获取Redis实例
 // Cat.create({ name: 'cool_dog', age: 1 });
 // Cat.findByName('^cool');
 // Cat.findOne().then(res => console.log(res));
 
-// const app = Server({ conf: 'tests/configs/app.json' });
-const app = Server({ conf: 'tests/configs/app-config.ts' });
+// On Server is running
+// GledeUtil.sendMail({                // 发送邮件
+//     to: 'a@qq.com,b@163.com',
+//     subject: '主题',
+//     html: '<img src="https://plog.top/favicon.ico">'
+// });
+// GledeUtil.getTokenUtil();
 
 app.addHook('onClose', () => {
     console.log('server should be closed');

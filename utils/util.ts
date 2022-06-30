@@ -1,14 +1,12 @@
 /**
- * @file Handler工具库
+ * @file 通用工具库
  * @date 2022-06-25
  * @author Perfumere
  */
 
-import { mkdirSync, existsSync, readFileSync } from 'fs';
-import { dirname, join, resolve } from 'path';
-import { __initMongo, __initRedis, getRedisInstance } from './db';
-import IpReader from '@yuo/ip2region';
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import { readFileSync } from 'fs';
+import { join, resolve } from 'path';
+import { __initMongo, __initRedis } from './db';
 
 /**
  * HTTP通信 [JSON校验](https://json-schema.apifox.cn/#数据类型)
@@ -54,53 +52,6 @@ export function __throwError(message: string) {
     throw new Error(`GledeServer: ${message}`);
 }
 
-export function __getIp(req: FastifyRequest) {
-    if (req.headers['x-real-ip']) {
-        return req.headers['x-real-ip'] as string;
-    }
-    if (__checkType(req.ip, 'string')) {
-        return req.ip.split(':').slice(-1)[0];
-    }
-}
-
-export function __getToken(req: FastifyRequest) {
-    if (!req.headers.authorization) {
-        return '';
-    }
-
-    return req.headers.authorization.substring(7);
-}
-
-export function __genReqUtils(req: FastifyRequest) {
-    return {
-        getIp() {
-            return __getIp(req);
-        },
-        getRegion(ip?: string) {
-            IpReader(ip || __getIp(req))
-        },
-        getToken() {
-            return __getToken(req);
-        },
-        getHeader(key: string) {
-            return req.headers[key];
-        },
-        getHeaders() {
-            return req.headers;
-        }
-    };
-};
-
-export function __genHandlerUtils(req: FastifyRequest, res: FastifyReply) {
-    return {
-        ...__genReqUtils(req),
-        mq: getRedisInstance(),
-        hasHeader: res.hasHeader.bind(res),
-        setHeader: res.header.bind(res),
-        removeHeader: res.removeHeader.bind(res)
-    };
-}
-
 export function __genSymbol(str: string) {
     return Symbol.for(`@@${str}__`);
 }
@@ -119,23 +70,6 @@ export function __getSymbols(target: any) {
 
         return key.startsWith('@@') && key.endsWith('__');
     });
-}
-
-export function __mkDir(opts: GledeServerOpts) {
-    let logDir = opts.logger && opts.logger.file ? dirname(opts.logger.file) : '';
-
-    if (logDir && !existsSync(logDir)) {
-        mkdirSync(logDir);
-    }
-}
-
-export function __initDatabase(opts: GledeServerOpts) {
-    if (opts.redis) {
-        __initRedis(opts.redis);
-    }
-    if (opts.mongodb) {
-        __initMongo(opts.mongodb.url, opts.mongodb.options);
-    }
 }
 
 export function __mixinServerOpts(opts: GledeServerOpts) {

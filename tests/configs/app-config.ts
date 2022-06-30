@@ -21,7 +21,12 @@ const {
     /**
      * Token 盐
      */
-    TOKEN_SALT
+    TOKEN_SALT,
+
+    /**
+     * 邮箱 鉴权信息
+     */
+    MAIL_PWD
 } = process.env;
 
 export default {
@@ -67,5 +72,13 @@ export default {
     token: {
         salt: TOKEN_SALT,
         period: 3600
-    }
+    },
+    mailer: [
+        {
+            host: 'smtp.feishu.cn',
+            user: '__test@philuo.com',
+            pass: MAIL_PWD,
+            nums: 600
+        }
+    ]
 };

@@ -31,7 +31,7 @@ export function __preprocessCors(req: FastifyRequest, res: FastifyReply, handler
         /**
          * [CORS文档](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Max-Age)
          */
-        res.header(CORS_HEADER, 'Content-Type,Cache-Control,Authorization');
+        res.header(CORS_HEADER, 'Content-Type,Cache-Control,Authorization,Origin');
         res.header(CORS_MAXAGE, 7200);
         const origin = __getOrigin(req.headers);
 

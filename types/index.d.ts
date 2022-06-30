@@ -26,7 +26,7 @@ declare interface GledeReqData {
 
 declare type GledeSupportMethod = 'GET' | 'POST';
 declare type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
-type GledeRouterHandler = (this: GledeUtil, data: GledeReqData) => GledeResData;
+type GledeRouterHandler = (this: GledeThis, data: GledeReqData) => GledeResData;
 
 interface RouterParams {
     subpath: string;
@@ -71,6 +71,39 @@ declare interface GledeIpRegion {
      * 供应商
      */
     ips: string;
+}
+
+interface GledeTokenOpts {
+    /** 分发加盐 */
+    salt: string;
+    /** 令牌有效期 */
+    period: number;
+}
+
+interface GledeMailerOpts {
+    /**
+     * smtp地址
+     * for example: smtp.feishu.cn
+     */
+    host: string;
+
+    /**
+     * 登录邮箱URL
+     * for example: __test@philuo.com
+     */
+    user: string;
+
+    /**
+     * 登录邮箱密码
+     * tip: 写入环境变量中, 设置高权限只读
+     */
+    pass: string;
+
+    /**
+     * 邮箱单日最大发送数量（注意群发算一次）, 临界时切换下一个配置邮箱
+     * tip: 设置为邮箱额度的3/4
+     */
+    nums: number;
 }
 
 declare interface GledeServerOpts {
@@ -141,14 +174,13 @@ declare interface GledeServerOpts {
     };
 
     /** token config */
-    token?: {
-        /** 分发加盐 */
-        salt: string;
-        /** 令牌有效期 */
-        period: number;
-    };
+    token?: GledeTokenOpts;
+
+    /** mailer config */
+    mailer?: GledeMailerOpts[];
 }
-declare interface GledeUtil {
+
+declare interface GledeThis {
     /**
      * 获取请求源的IPv4
      */
@@ -162,7 +194,7 @@ declare interface GledeUtil {
     /**
      * 获取认证信息
      */
-    getToken: () => string;
+    getToken: () => GledeTokenPayload;
 
     /**
      * 获得请求头中的指定字段
@@ -370,4 +402,17 @@ declare interface GledeTokenUtil {
      * `2~5验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改`
      */
     verify(token: string): 0 | 1 | 2 | 3 | 4 | 5;
+}
+
+declare interface GledeMailMessage {
+    /** 接收方邮件URL */
+    to: string;
+    /** 发送方邮件URL */
+    from?: string;
+    /** 邮件标题 */
+    subject?: string;
+    /** 邮件HTML内容, 与text字段互斥 */
+    html?: string;
+    /** 邮件文本内容, 与html字段互斥 */
+    text?: string;
 }
