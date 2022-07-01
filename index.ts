@@ -9,7 +9,9 @@ import {
     __getTokenUtil as getTokenUtil,
     createTokenUtil,
     createMailer,
-    sendMail
+    sendMail,
+    schedule,
+    validate
 } from './utils';
 
 export const GledeStaticUtil = {
@@ -17,6 +19,8 @@ export const GledeStaticUtil = {
     getMongoInstance,
     createTokenUtil,
     createMailer,
+    schedule,
+    validate
 };
 
 /**

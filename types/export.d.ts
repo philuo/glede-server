@@ -18,7 +18,7 @@ interface GledeThis {
     /**
      * 获取请求源的行政区
      */
-    getRegion: () => GledeIpRegion;
+    getRegion: (ip?: string) => GledeIpRegion;
 
     /**
      * 获取认证信息
@@ -484,3 +484,52 @@ export namespace GledeStaticUtil {
     /** 获取Mongoose实例 */
     export function getMongoInstance(): Mongoose;
 }
+
+/** 同一进程处理事务 */
+interface GledeScheduleTask {
+    /** 启动事务 */
+    start(): void;
+    /** 注销事务 */
+    stop(): void;
+    /**
+     * 同步立即触发
+     * @param now 自定义标识, 可在事务回调中识别手动或自动
+     * @default 'manual'
+     */
+    now(now?: string): void;
+}
+
+/** 启动子进程处理事务, 非独立子进程（随主线程退出而终结） */
+interface GledeBGScheduleTask {
+    /** 启动事务 */
+    start(): void;
+    /** 注销事务 */
+    stop(): void;
+    /**
+     * 获取工作进程的pid
+     * @param now 自定义标识, 可在事务回调中识别手动或自动
+     */
+    pid(): number | undefined;
+    /** 事务是否在正常处理中 */
+    isRunning(): boolean;
+}
+
+/**
+ * [验证cronStr是否符合规则](https://github.com/philuo/node-cron)
+ * @param cronStr `* * * * * * | * * * * *`
+ */
+export function validate(cronStr: string): boolean;
+
+/**
+ * 生成事务并返回控制手柄
+ * @param cronStr cron规则描述
+ * @param func 回调方法
+ */
+export function schedule(cronStr: string, func: Function): GledeScheduleTask;
+
+/**
+ * 生成事务并返回控制手柄
+ * @param cronStr cron规则描述
+ * @param filePath 文件路径
+ */
+export function schedule(cronStr: string, filePath: string): GledeBGScheduleTask;

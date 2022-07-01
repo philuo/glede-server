@@ -48,7 +48,7 @@ declare type GledeReqHeader = ReqContentHeader | ReqOriginHeader | ReqPayloadHea
 declare interface GledeIpRegion {
 
     /**
-     * 省份ID
+     * 省份ID 1~34 | 0 未匹配
      */
     pid: number;
 
@@ -66,6 +66,11 @@ declare interface GledeIpRegion {
      * 城市名
      */
     city: string;
+
+    /**
+     * 区域编号
+     */
+    zone: string;
 
     /**
      * 供应商
@@ -189,7 +194,7 @@ declare interface GledeThis {
     /**
      * 获取请求源的行政区
      */
-    getRegion: () => GledeIpRegion;
+    getRegion: (ip?: string) => GledeIpRegion;
 
     /**
      * 获取认证信息

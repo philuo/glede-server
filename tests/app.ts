@@ -16,6 +16,8 @@ const app = Server({ conf: 'tests/configs/app-config.ts' });
 // Cat.create({ name: 'cool_dog', age: 1 });
 // Cat.findByName('^cool');
 // Cat.findOne().then(res => console.log(res));
+// GledeStaticUtil.schedule('*/5 * * * * *', () => console.log('memory usage: ' + process.memoryUsage()));
+// GledeStaticUtil.schedule('*/2 * * * * *', './tests/crons/test.ts');
 
 // On Server is running
 // GledeUtil.sendMail({                // 发送邮件

@@ -1,5 +1,5 @@
 {
-  "name": "@yuo/glede-server",
+  "name": "glede-server",
   "version": "1.0.0",
   "description": "Web业务服务器",
   "author": "Perfumere<1061393710@qq.com>",
@@ -27,7 +27,8 @@
   },
   "dependencies": {
     "@fastify/swagger": "^7.4.0",
-    "@yuo/ip2region": "^1.0.0",
+    "@yuo/ip2region": "^1.0.3",
+    "@yuo/node-cron": "^1.0.2",
     "fastify": "^4.1.0",
     "ioredis": "^5.1.0",
     "mongoose": "^6.4.1",

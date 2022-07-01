@@ -240,6 +240,70 @@
           }
         }
       }
+    },
+    "/": {
+      "get": {
+        "summary": "xx",
+        "description": "xx",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "title": "状态码",
+                      "description": "0 正常 | 1 参数校验错误 | >= 2 自定义错误",
+                      "type": "integer"
+                    },
+                    "data": {
+                      "description": "响应的数据结构, code > 0 时值必须为null",
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "pid": {
+                              "type": "integer"
+                            },
+                            "cid": {
+                              "type": "integer"
+                            },
+                            "zone": {
+                              "type": "string"
+                            },
+                            "province": {
+                              "type": "string"
+                            },
+                            "city": {
+                              "type": "string"
+                            },
+                            "ips": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "msg": {
+                      "description": "code > 0 必选, 用来描述错误信息, 📢不要暴露服务器的敏感处理流程",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "servers": [

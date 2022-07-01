@@ -9,7 +9,7 @@ import { allSchema, singleSchema } from './schema';
 // import Cat from '@/tests/controllers/cat';
 
 export class Router extends GledeRouter {
-    @Get('/all', { schema: allSchema }) @NeedAuth('noauth')
+    @Get('/all', { schema: allSchema })
     getAll (this: GledeThis, data: GledeReqData) {
         // no return sames like follow:
         // return;

@@ -19,6 +19,14 @@
 [注册路由状态树](./tests/logs/routers.txt) /
 [api文档](./tests/logs/apis.json)  ([导入Apifox工具查看](https://www.apifox.cn/help/app/import/swagger/))
 
+## Benchmark
+
+⚡️ `3~4x faster than` [Express](https://github.com/expressjs/express)
+
+`MacOS; Intel-i5 2.9GHz; Memory-DDR4 32 GB`
+
+![压测数据](./tests/logs/benchmark.png)
+
 ```ts
 // types/index.d.ts 有详细的描述,手写配置会覆盖conf文件中的对应字段
 // 优先级：代码中手写配置 > conf字段文件配置
@@ -61,6 +69,12 @@ export class Router extends GledeRouter {
             };
         }
 
+        // 以下情景等价于返回 {code:0, data: null}
+        // 1. 无return语句
+        // 2. return null
+        // 3. return;
+        // 4. return undefined
+
         return {
             code: 0, // 0 处理成功
             data: {
@@ -78,6 +92,24 @@ export class Router extends GledeRouter {
 - [GledeUtil](./types/export.d.ts)
 
 - [GledeStaticUtil](./types/export.d.ts)
+
+## 路由注册
+
+### 注册不带前缀的路由
+
+非index文件或目录会保持大小写被记录到路由中，例如示例中`./api/user/index.ts`中`user`会被注册到 /api/user/$subpath。一下示例中index是不会注册到路由中的，若注册`/index`则需装饰器完成需求：@Get('/index')。
+
+`routers/open?api|common/index/index.ts`
+
+`routers/open?api|common/index.ts`
+
+### 严格注册模式
+
+- 除 '/' 路由外，是否携带 / 需注册不同的 `RouterHandler`
+
+`@Get('')` 和 `@Get('/')`监听的是不同的路由,
+
+`localhost:3020/user`和`localhost:3020/user/` 是不同的路由
 
 ```ts
 // 目录: routers/api/post
@@ -104,11 +136,6 @@ export default class extends GledeRouter {
         else {
             Post.deleteOne({ postId: data.params.id });
         }
-
-        return {
-            code: 0,
-            data: {}
-        };
     }
 }
 ```
@@ -297,6 +324,13 @@ else fail -> else -> else fail -> else fail -> else fail
 
 - `ioredis`
 
+### 区域检测
+
+[@yuo/ip2region](https://github.com/philuo/ip2region)
+
+### SMTP邮件发送
+
+[nodemailer](https://www.npmjs.com/package/nodemailer)
 
 ### 黑名单
 
@@ -307,6 +341,10 @@ else fail -> else -> else fail -> else fail -> else fail
 - `token blklist`
 
 `判黑条件：超管手动添加 / 即将过期且验证通过的Token`
+
+### 定时任务
+
+[@yuo/node-cron](https://github.com/philuo/node-cron)
 
 ## TODO
 
@@ -320,13 +358,3 @@ else fail -> else -> else fail -> else fail -> else fail
 - 邮件通知警告
 
 `触发条件: 程序判定新增IP黑名单`
-
-### 升级@yuo/ip2region
-
-- 城市和省份替换为cid和pid
-
-- 考虑数据源升级, 更新ip库
-
-- 优化代码风格和逻辑
-
-- 编译到WASM或是C的插件移植到Nginx上

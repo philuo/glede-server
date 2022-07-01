@@ -103,11 +103,12 @@ export async function __registerRouter(
                 }
 
                 let type = '/';
+                const isMain = api === 'index' || api === 'index.ts';
                 if (router !== 'common') {
                     type += router;
                 }
 
-                __genRouter(server, pkgs[key], type, api.split('.')[0]);
+                __genRouter(server, pkgs[key], type, isMain ? '' : api.split('.')[0]);
             }
         }
     }
@@ -134,11 +135,14 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
 
         const router = {
             method,
-            schema,
             url: __genUrl(type, version, path, subpath),
             handler: __genRouterHandler(handler),
             onSend: __genRouterSend
-        };
+        } as any;
+
+        if (__checkType(schema, 'object')) {
+            router.schema = schema;
+        }
 
         app.route(router);
     }
@@ -158,19 +162,44 @@ const SUCCESS_EMPTY = {
 };
 
 function __genRouterHandler(handler) {
-    return async function (req: FastifyRequest, res: FastifyReply) {
+    if (__checkType(handler, 'asyncfunction')) {
+        return async (req: FastifyRequest, res: FastifyReply) => {
+            if (!__preprocessRouter(req, res, handler)) {
+                return PREHANDL_ERR;
+            }
+    
+            const { body, params, query } = req;
+    
+            const processRes = await handler.call(
+                __genHandlerUtils(req, res),
+                { body, params, query }
+            );
+    
+            if (processRes === undefined || processRes === null) {
+                return SUCCESS_EMPTY;
+            }
+    
+            return processRes;
+        }
+    }
+
+    return (req: FastifyRequest, res: FastifyReply) => {
         if (!__preprocessRouter(req, res, handler)) {
             return PREHANDL_ERR;
         }
 
         const { body, params, query } = req;
 
-        const processRes = await handler.call(
+        const processRes = handler.call(
             __genHandlerUtils(req, res),
             { body, params, query }
         );
 
-        return processRes || SUCCESS_EMPTY;
+        if (processRes === undefined || processRes === null) {
+            return SUCCESS_EMPTY;
+        }
+
+        return processRes;
     };
 }
 
