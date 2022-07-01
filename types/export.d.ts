@@ -483,6 +483,26 @@ export namespace GledeStaticUtil {
 
     /** 获取Mongoose实例 */
     export function getMongoInstance(): Mongoose;
+
+    /**
+     * [验证cronStr是否符合规则](https://github.com/philuo/node-cron)
+     * @param cronStr `* * * * * * | * * * * *`
+     */
+    export function validate(cronStr: string): boolean;
+
+    /**
+     * 生成事务并返回控制手柄
+     * @param cronStr cron规则描述
+     * @param func 回调方法
+     */
+    export function schedule(cronStr: string, func: Function): GledeScheduleTask;
+
+    /**
+     * 生成事务并返回控制手柄
+     * @param cronStr cron规则描述
+     * @param filePath 文件路径
+     */
+    export function schedule(cronStr: string, filePath: string): GledeBGScheduleTask;
 }
 
 /** 同一进程处理事务 */
@@ -513,23 +533,3 @@ interface GledeBGScheduleTask {
     /** 事务是否在正常处理中 */
     isRunning(): boolean;
 }
-
-/**
- * [验证cronStr是否符合规则](https://github.com/philuo/node-cron)
- * @param cronStr `* * * * * * | * * * * *`
- */
-export function validate(cronStr: string): boolean;
-
-/**
- * 生成事务并返回控制手柄
- * @param cronStr cron规则描述
- * @param func 回调方法
- */
-export function schedule(cronStr: string, func: Function): GledeScheduleTask;
-
-/**
- * 生成事务并返回控制手柄
- * @param cronStr cron规则描述
- * @param filePath 文件路径
- */
-export function schedule(cronStr: string, filePath: string): GledeBGScheduleTask;
