@@ -412,7 +412,7 @@ export function Model<T, K>(
     name: string,
     schema: T,
     opts?: GledeModelOpts<K>
-): _Model<T, K>;
+): _Model<T, K> & K;
 
 interface GledeTokenUtil {
     /** 签发令牌 */
