@@ -197,7 +197,7 @@ export default Model('cat', CatSchema, CatOpts);
 ### 操作数据模型
 
 ```ts
-import { Cat } from '@/tests/controllers/cat';
+import Cat from '@/tests/controllers/cat';
 
 // 1. 在Cat表中插入一条数据, 后面Demo默认包裹在try-catch中
 try {
