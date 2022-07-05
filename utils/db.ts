@@ -69,3 +69,29 @@ export function Model<T, K>(
         opts.collection
     );
 }
+
+/**
+ * 事务处理块, 保证多集合CRUD数据的一致性
+ * @param func CRUD操作集合
+ */
+export async function Transaction(func: (session: mongoose.ClientSession) => void) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    let isCommited = false;
+
+    try {
+        await func(session);
+        isCommited = true;
+        await session.commitTransaction();
+    }
+    catch (err) {
+        if (!isCommited) {
+            await session.abortTransaction();
+        }
+
+        throw err;
+    }
+    finally {
+        session.endSession();
+    }
+}

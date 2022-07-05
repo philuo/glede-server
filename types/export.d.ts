@@ -6,7 +6,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { Model as _Model, ConnectOptions } from 'mongoose';
-import type { Mongoose } from 'mongoose'
+import type { Mongoose, ClientSession } from 'mongoose'
 import type { Redis } from 'ioredis';
 
 interface GledeThis {
@@ -327,6 +327,8 @@ export interface GledeTokenPayload {
 
 /**
  * 创建GledeServer实例
+ * @param 初始化参数 {@link GledeServerOpts}
+ * @param 启动回调
  */
 export function Server(
     opts: GledeServerOpts,
@@ -403,6 +405,7 @@ export function getServerInstance(): FastifyInstance;
 export function printRouters(opts: GledeServerOpts): void;
 
 /**
+ * 创建MongoDB Model
  * @param name Model名称
  * @param schema Model格式校验
  * @param opts.collection 可选, 指定MongoDB集合名称
@@ -413,6 +416,12 @@ export function Model<T, K>(
     schema: T,
     opts?: GledeModelOpts<K>
 ): _Model<T, K> & K;
+
+/**
+ * 事务处理块, 保证多集合CRUD数据的一致性
+ * @param func CRUD操作集合
+ */
+export function Transaction(func: (session: ClientSession) => void | Promise<void>): Promise<void>;
 
 interface GledeTokenUtil {
     /** 签发令牌 */
