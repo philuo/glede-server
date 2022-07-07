@@ -166,10 +166,7 @@ interface GledeServerOpts {
     mailer?: GledeMailerOpts[];
 }
 
-type JsonSchemaCombineType = 'array' | 'object';
-type JsonSchemaNumericType = 'string' | 'number' | 'integer';
 type JsonSchemaNormalType = 'boolean' | 'null';
-type JsonSchemaType = JsonSchemaCombineType | JsonSchemaNumericType | JsonSchemaNormalType;
 
 interface JsonSchemaString {
     type: 'string';
@@ -416,6 +413,8 @@ export function Model<T, K>(
     schema: T,
     opts?: GledeModelOpts<K>
 ): _Model<T, K> & K;
+
+export { Schema } from 'mongoose';
 
 /**
  * 事务处理块, 保证多集合CRUD数据的一致性

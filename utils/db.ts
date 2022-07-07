@@ -45,7 +45,7 @@ export function getMongoInstance() {
     return mongoClient as typeof mongoose;
 }
 
-const Schema = mongoose.Schema;
+export const Schema = mongoose.Schema;
 
 /**
  * @param name Model名称
@@ -60,13 +60,13 @@ export function Model<T, K>(
 ) {
     const options = {
         versionKey: false,
-        statics: opts ? opts.statics : undefined
+        statics: opts?.statics
     };
 
     return mongoose.model(
         name, 
         new Schema(schema, options),
-        opts.collection
+        opts?.collection
     );
 }
 
