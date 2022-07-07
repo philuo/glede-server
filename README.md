@@ -93,6 +93,12 @@ export class Router extends GledeRouter {
 
 - [GledeStaticUtil](./types/export.d.ts)
 
+- [Schema](./types/export.d.ts)
+
+- [Model](./types/export.d.ts)
+
+- [ObjectId](./types/export.d.ts)
+
 ## 路由注册
 
 ### 注册不带前缀的路由

@@ -47,6 +47,10 @@ export function getMongoInstance() {
 
 export const Schema = mongoose.Schema;
 
+export function ObjectId(id?: mongoose.Types.ObjectId | string) {
+    return new mongoose.Types.ObjectId(id);
+}
+
 /**
  * @param name Model名称
  * @param schema Model格式校验

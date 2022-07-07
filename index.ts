@@ -35,4 +35,4 @@ export { Server } from './libs/init';
 export { printRouters } from './libs/route';
 export { GledeRouter, getServerInstance } from './libs/base';
 export { Get, Post, Cors, NeedAuth } from './libs/decorator';
-export { Model, Transaction } from './utils';
+export { Schema, ObjectId, Model, Transaction } from './utils';

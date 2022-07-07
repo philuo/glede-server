@@ -417,6 +417,12 @@ export function Model<T, K>(
 export { Schema } from 'mongoose';
 
 /**
+ * 生成ObjectId, 可通过toString()获取字符值
+ * @param id 传入后尝试获取已有_id, 否则给到新的_id
+ */
+export function ObjectId(id?: string | number | Mongoose['Types']['ObjectId']): Mongoose['Types']['ObjectId'];
+
+/**
  * 事务处理块, 保证多集合CRUD数据的一致性
  * @param func CRUD操作集合
  */
