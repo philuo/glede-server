@@ -35,7 +35,7 @@ interface GledeServerOpts {
 }
 
 // app.ts
-import { Server } from '@yuo/glede-server';
+import { Server } from 'glede-server';
 
 Server({ conf: 'configs/app.json' }, (err, address) => {
     if (err) {
@@ -50,7 +50,7 @@ Server({ conf: 'configs/app.json' }, (err, address) => {
 ### 路由类
 
 ```ts
-import { GledeRouter, Get, Post } from '@yuo/glede-server';
+import { GledeRouter, Get, Post } from 'glede-server';
 
 export class Router extends GledeRouter {
     // 注意方法不要使用箭头函数
@@ -120,7 +120,7 @@ export class Router extends GledeRouter {
 ```ts
 // 目录: routers/api/post
 import { Post } from '../controllers';
-import { GledeUtil, Get, GledeRouter } from '@yuo/glede-server'
+import { GledeUtil, Get, GledeRouter } from 'glede-server'
 
 export default class extends GledeRouter {
     /**
