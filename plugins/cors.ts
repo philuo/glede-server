@@ -25,7 +25,7 @@ function __getOrigin(header: Record<string, string | string[]>) {
 }
 
 export function __preprocessCors(req: FastifyRequest, res: FastifyReply, handler) {
-    const cors = handler[__genSymbol('cors')];
+    const cors = handler.name ? handler[__genSymbol('cors')] : handler;
 
     if (__checkType(cors, 'array')) {
         /**

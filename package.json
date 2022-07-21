@@ -1,6 +1,6 @@
 {
   "name": "glede-server",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "Web业务服务器",
   "author": "Perfumere<1061393710@qq.com>",
   "main": "index.ts",
@@ -29,7 +29,7 @@
     "@fastify/swagger": "^7.4.0",
     "@yuo/ip2region": "^1.0.3",
     "@yuo/node-cron": "^1.0.2",
-    "fastify": "^4.1.0",
+    "fastify": "^4.3.0",
     "ioredis": "^5.1.0",
     "mongoose": "^6.4.1",
     "nodemailer": "^6.7.5"

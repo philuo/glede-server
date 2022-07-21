@@ -17,7 +17,7 @@ import {
     __throwError
 } from '../utils';
 import { GledeRouter, getServerInstance } from './base';
-import { __preprocessRouter } from '../plugins';
+import { __preprocessRouter, __preprocessCors } from '../plugins';
 import type { FastifyInstance, FastifyRequest ,FastifyReply } from 'fastify';
 
 /**
@@ -132,16 +132,25 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
             schema,
             handler,
         } = routerData[symbol];
+        const cors = handler[__genSymbol('cors')];
+        const url = __genUrl(type, version, path, subpath);
 
         const router = {
             method,
-            url: __genUrl(type, version, path, subpath),
+            url,
             handler: __genRouterHandler(handler),
             onSend: __genRouterSend
         } as any;
 
         if (__checkType(schema, 'object')) {
             router.schema = schema;
+        }
+
+        if (cors) {
+            app.options(url, (req, res) => {
+                __preprocessCors(req, res, cors);
+                res.send();
+            });
         }
 
         app.route(router);

@@ -8,6 +8,8 @@ import { __preprocessCors } from './cors';
 import { __preprocessAuth } from './auth';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
+export * from './cors';
+
 /**
  * 预处理请求
  * @param req FastifyRequest
