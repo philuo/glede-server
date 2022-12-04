@@ -249,6 +249,8 @@ interface JsonSchemaString {
     enum?: string[];
     /** 指定唯一值 */
     const?: string;
+    /** 默认值 */
+    default?: string;
 }
 
 interface JosnSchemaNumric {
@@ -263,6 +265,8 @@ interface JosnSchemaNumric {
     enum?: number[];
     /** 指定唯一值 */
     const?: number;
+    /** 默认值 */
+    default?: number;
 }
 
 interface JosnSchemaObject {
@@ -285,6 +289,8 @@ interface JosnSchemaArray {
 
 interface JsonSchemaNormal {
     type: JsonSchemaNormalType;
+    /** 默认值 */
+    default?: boolean | null;
 }
 
 interface JsonSchemaEnum {
@@ -296,8 +302,6 @@ interface JsonSchemaDescription {
     title?: string;
     /** 字段解释 */
     description?: string;
-    /** 默认值 */
-    default?: string;
     /** 举例说明 */
     examples?: any[];
 }
@@ -386,13 +390,17 @@ declare interface GledeModelOpts<T> {
 
 declare interface GledeTokenPayload {
     /** 用户id */
-    uid?: string;
+    uid?: string | number;
     /** 生效时间, 秒级时间戳 */
     nbf?: number;
     /** 过期时间, 秒级时间戳 */
     exp?: number;
-    /** 票据权限 */
-    role?: string;
+    /**
+     * 票据权限
+     * Default: 3 -> user, from 0 start
+     * ['root', 'super', 'admin', 'user', ...]
+     */
+    role?: number;
 }
 
 declare interface GledeTokenUtil {
@@ -404,9 +412,9 @@ declare interface GledeTokenUtil {
      * @param token string
      * @returns 验证状态
      * `0、1验证通过, 1表示token即将过期`
-     * `2~5验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改`
+     * `2~6验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改, 6权限不足`
      */
-    verify(token: string): 0 | 1 | 2 | 3 | 4 | 5;
+    verify(token: string, role: number): 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 declare interface GledeMailMessage {

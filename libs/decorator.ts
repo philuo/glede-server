@@ -24,14 +24,17 @@ export function NeedAuth(level: GledeAuthLevel) {
         if (target[name][authSymbol]) {
             __throwError(`@NeedAuth has already exists on handler ${name}`);
         }
-        if (!authRole.includes(level)) {
+
+        const index = authRole.indexOf(level);
+
+        if (!~index) {
             __throwError(`@NeedAuth receive error role on handler ${name}`);
         }
         if (!level || level === 'noauth') {
             return;
         }
 
-        target[name][authSymbol] = level;
+        target[name][authSymbol] = index;
     }
 }
 

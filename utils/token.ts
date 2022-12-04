@@ -28,9 +28,9 @@ function __signature(content: string, salt: string) {
  * @param token 身份令牌
  * 0、1验证通过, 1表示token即将过期
  * 
- * 2~5验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改
+ * 2~6验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改, 6权限不足
  */
-function __verify(token: string, salt: string, period: number) {
+function __verify(token: string, salt: string, period: number, level: number) {
     const [content, sign] = token.split('.');
     const payload = __unserialize(content);
 
@@ -39,8 +39,12 @@ function __verify(token: string, salt: string, period: number) {
         return 2;
     }
 
-    const { exp, nbf } = payload;
+    const { exp, nbf, role } = payload;
     const now = Math.trunc(Date.now() / 1000);
+
+    if (role > level) {
+        return 6;
+    }
 
     // 有效时间范围：exp(失效时间点) >= now >= ntf(生效时间点)
     if (nbf && nbf > now) {
@@ -78,14 +82,14 @@ export function createTokenUtil(opts: GledeTokenOpts) {
             const content = __serialize({
                 nbf: curSecond,
                 exp: curSecond + period,
-                role: 'user',
+                role: 3,
                 ...payload,
             });
 
             return `${content}.${__signature(content, salt)}`;
         },
-        verify(token) {
-            return __verify(token, salt, period);
+        verify(token, role) {
+            return __verify(token, salt, period, role);
         }
     };
 }

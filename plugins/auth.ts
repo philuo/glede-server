@@ -17,20 +17,16 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
  */
 // const TOKEN_BLKLIST = 'blk_auth';
 
-function __isValidToken(token: string, util: GledeTokenUtil) {
-    if (!token || util) {
+function __isValidToken(token: string, util: GledeTokenUtil, auth: number) {
+    if (!token || !util) {
         return false;
     }
 
-    const verfiyStatus = util.verify(token);
+    const verfiyStatus = util.verify(token, auth);
 
     if (verfiyStatus !== 0 && verfiyStatus !== 1) {
         return false;
     }
-
-    // if (util.verify(token) === 1) {
-    // TODO: Refresh Token
-    // }
 
     return true;
 }
@@ -38,9 +34,9 @@ function __isValidToken(token: string, util: GledeTokenUtil) {
 export function __preprocessAuth(req: FastifyRequest, res: FastifyReply, handler) {
     const auth = handler[__genSymbol('auth')];
 
-    if (!__checkType(auth, 'string')) {
+    if (!__checkType(auth, 'number')) {
         return true;
     }
 
-    return __isValidToken(__getToken(req), __getTokenUtil());
+    return __isValidToken(__getToken(req), __getTokenUtil(), auth);
 }
