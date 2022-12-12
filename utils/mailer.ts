@@ -41,7 +41,7 @@ export async function sendMail(message: GledeMailMessage) {
         __throwError('sendMail mailer is not exists');
     }
 
-    const { user } = await __checkoutMailer(mailerList);
+    const { user } = await __checkoutMailer(mailerList, true);
 
     return await mailer.sendMail({
         from: user,
@@ -67,7 +67,7 @@ export function createMailer(opts: GledeMailerOpts) {
     return outMailer[opts.user] = __createTransport(host, user, pass);
 }
 
-async function __checkoutMailer(list) {
+async function __checkoutMailer(list, needCount = false) {
     const client = getRedisInstance();
 
     if (!client) {
@@ -81,14 +81,18 @@ async function __checkoutMailer(list) {
     for (let index = 0; index < list.length; index += 1) {
         const mailer = list[index];
         const countKey = PREFIX + mailer.user;
-        const count = Number(await client.get(countKey) || 0);
+        let count = Number(await client.get(countKey) || 0);
 
         if (count < mailer.nums) {
-            /**
-             * -1 永久存在 | -2 不存在 | 0~n 剩余生存时长
-             */
-            const mttl = await client.ttl(countKey);
-            client.set(countKey, count, 'EX', mttl !== -2 ? mttl : TTL);
+            if (needCount) {
+                const mttl = await client.ttl(countKey);
+
+                /**
+                 * -1 永久存在 | -2 不存在 | 0~n 剩余生存时长
+                 */
+                client.set(countKey, ++count, 'EX', mttl !== -2 ? mttl : TTL);
+            }
+
             mailerState.cursor = index;
             mailerState.remain = mailer.nums - count;
 

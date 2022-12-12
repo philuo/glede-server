@@ -21,9 +21,10 @@ interface GledeThis {
     getRegion: (ip?: string) => GledeIpRegion;
 
     /**
-     * 获取认证信息
+     * 获取认证信息, 建议在未使用 `@NeedAuth` 时判定下返回结果中payload是否非空
+     * 可能获取 { token: '', payload: null } { token: ..., payload: null }
      */
-    getToken: () => GledeTokenPayload;
+    getToken: () => TokenParam;
 
     /**
      * 获得请求头中的指定字段
@@ -51,10 +52,15 @@ interface GledeThis {
     hasHeader: (key: string) => void;
 }
 
+interface TokenParam {
+    token: string;
+    payload: GledeTokenPayload;
+}
+
 interface GledeReqData {
-    body: Record<string, any>,
+    query: Record<string, any> & TokenParam;
+    body: Record<string, any> & TokenParam;
     params: Record<string, any>;
-    query: Record<string, any>;
 }
 
 type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';

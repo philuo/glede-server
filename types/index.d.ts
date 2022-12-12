@@ -19,9 +19,9 @@ interface GledeResSuccess {
 
 /** GledeRouterHandler 入参 */
 declare interface GledeReqData {
-    body: Record<string, any>,
+    query: Record<string, any> & TokenParam;
+    body: Record<string, any> & TokenParam;
     params: Record<string, any>;
-    query: Record<string, any>;
 }
 
 declare type GledeSupportMethod = 'GET' | 'POST';
@@ -185,6 +185,11 @@ declare interface GledeServerOpts {
     mailer?: GledeMailerOpts[];
 }
 
+interface TokenParam {
+    token: string;
+    payload: GledeTokenPayload;
+}
+
 declare interface GledeThis {
     /**
      * 获取请求源的IPv4
@@ -197,9 +202,10 @@ declare interface GledeThis {
     getRegion: (ip?: string) => GledeIpRegion;
 
     /**
-     * 获取认证信息
+     * 获取认证信息, 建议在未使用 `@NeedAuth` 时判定下返回结果中payload是否非空
+     * 可能获取 { token: '', payload: null } { token: ..., payload: null }
      */
-    getToken: () => GledeTokenPayload;
+    getToken: () => TokenParam;
 
     /**
      * 获得请求头中的指定字段
