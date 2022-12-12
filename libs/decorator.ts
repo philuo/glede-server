@@ -88,7 +88,7 @@ function __methodReturnCb(
     subpath: string,
     { version = '', schema }: GledeMethodOpts
 ) {
-    const symbolKey = __genSymbol(`${subpath}:${version}`);
+    const symbolKey = __genSymbol(`${method}:${subpath}:${version}`);
 
     return function (target, name) {
         if (!target[symbolKey]) {
