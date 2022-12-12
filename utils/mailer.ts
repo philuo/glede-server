@@ -74,10 +74,6 @@ async function __checkoutMailer(list, needCount = false) {
         __throwError('__checkMailer is based on redis connection');
     }
 
-    if (mailerState.cursor !== -1 && mailerState.remain > 0) {
-        return list[mailerState.cursor];
-    }
-
     for (let index = 0; index < list.length; index += 1) {
         const mailer = list[index];
         const countKey = PREFIX + mailer.user;
