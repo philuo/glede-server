@@ -35,7 +35,19 @@ export function __genHandlerUtils(req: FastifyRequest, res: FastifyReply) {
             return IpReader(ip || __getIp(req))
         },
         getToken() {
-            return __unserialize(__getToken(req).split('.')[0]);
+            if (req.method === 'GET' && req.query['_token']) {
+                return req.query['_token'];
+            }
+            if (req.method === 'POST' && req.body['_token']) {
+                return req.body['_token'];
+            }
+
+            const token = __getToken(req);
+
+            return {
+                token,
+                payload: __unserialize(__getToken(req).split('.')[0])
+            };
         },
         getHeader(key: string) {
             return req.headers[key];

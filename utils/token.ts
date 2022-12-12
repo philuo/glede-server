@@ -5,6 +5,7 @@
  */
 
 import { createHmac } from 'crypto';
+import type { FastifyRequest } from 'fastify';
 
 function __serialize(content: GledeTokenPayload) {
     return Buffer.from(JSON.stringify(content)).toString('base64url');
@@ -30,10 +31,14 @@ function __signature(content: string, salt: string) {
  * 
  * 2~6验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改, 6权限不足
  */
-function __verify(token: string, salt: string, period: number, level: number) {
-    const [content, sign] = token.split('.');
-    const payload = __unserialize(content);
-
+function __verify(
+    content,
+    sign,
+    payload,
+    salt: string,
+    period: number,
+    level: number
+) {
     // 载体解析错误
     if (!payload) {
         return 2;
@@ -73,7 +78,7 @@ function __verify(token: string, salt: string, period: number, level: number) {
 }
 
 export function createTokenUtil(opts: GledeTokenOpts) {
-    const { salt, period } = opts;
+    const { salt, period = 3600 } = opts;
 
     return {
         sign(payload?: GledeTokenPayload) {
@@ -89,19 +94,62 @@ export function createTokenUtil(opts: GledeTokenOpts) {
             return `${content}.${__signature(content, salt)}`;
         },
         verify(token, role) {
-            return __verify(token, salt, period, role);
+            const [content, sign] = token.split('.');
+
+            return __verify(
+                content,
+                sign,
+                __unserialize(content),
+                salt, 
+                period,
+                role
+            );
         }
     };
 }
 
+export function __isValidToken(req: FastifyRequest, token: string, auth: number) {
+    if (!tokenOpts) {
+        return false;
+    }
+
+    const [content, sign] = token.split('.');
+    const payload = __unserialize(content);
+    const code = __verify(
+        content,
+        sign,
+        payload,
+        tokenOpts.salt, 
+        tokenOpts.period,
+        auth
+    );
+
+    if (code === 0 || code === 1) {
+        const data = { token, payload };
+
+        if (req.method === 'GET') {
+            req.query['_token'] = data;
+        }
+        else if (req.method === 'POST') {
+            req.body['_token'] = data;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
 let tokenUtil: GledeTokenUtil;
+let tokenOpts: GledeTokenOpts;
 export function __getTokenUtil() {
     return tokenUtil;
 }
 
 export function __genTokenUtil(opts: GledeServerOpts) {
     if (!tokenUtil) {
-        tokenUtil = createTokenUtil(opts.token);
+        tokenOpts = opts.token;
+        tokenUtil = createTokenUtil(tokenOpts);
     }
 
     return tokenUtil;
