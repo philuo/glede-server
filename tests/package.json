@@ -1,0 +1,20 @@
+{
+  "name": "your-appname",
+  "version": "1.0.0",
+  "private": "true",
+  "description": "your-app-description",
+  "author": "yourname <email>",
+  "main": "app.ts",
+  "scripts": {
+    "dev": "tsx watch app --mode dev",
+    "start": "tsx app --mode beta",
+    "prod": "tsx app --mode prod",
+    "test": "tsx tests --mode test",
+    "webhook": "tsx scripts/deploy",
+    "server": "pm2 start npm --name oker-campus -- run prod"
+  },
+  "dependencies": {
+    "glede-server": "^1.0.17",
+    "tsx": "^3.6.0"
+  }
+}

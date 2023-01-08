@@ -2,10 +2,13 @@
 
 ## 单例模式
 
-目前单个项目中只能创建一个Server实例, 暂时无mono-repo的要求。
+目前单个项目中只能创建一个Server实例, 暂时无mono-repo的需求。
 
 若后续使用mono-repo, 则考虑新增配置 `basePath: ''`, 
 路由注册、日志记录、文档校验、数据库等操作基于`basePath`
+
+当前文档支持不全, `tests` 目录下有一些基础示例, 另外`d.ts`有些描述，
+若您有任何疑问可联系邮箱 `1061393710@qq.com`
 
 ## 基于配置启动
 
@@ -14,6 +17,8 @@
 [JSON配置案例: app.json](./tests/configs/app.json)
 
 **推荐！**[TS配置案例: app-config.ts](./tests/configs/app-config.ts)
+
+配置中的服务驱动配置以及环境环境请您自定义。
 
 [服务器日志信息](./tests/logs/error.log) / 
 [注册路由状态树](./tests/logs/routers.txt) /
@@ -47,7 +52,40 @@ Server({ conf: 'configs/app.json' }, (err, address) => {
 });
 ```
 
-### 路由类
+## 模版目录结构
+
+- 在您的项目目录下执行 `npm install glede-server` 后参考本项目的`tests`目录创建即可
+- 注意引包时使用 `import {...} from 'glede-server';`
+- 注意引用类型使用 `import type {...} from 'glede-server';`
+
+```
+├── app.ts                      // 服务器启动入口
+├── configs                     // 服务器配置
+│   ├── app-config.ts           // 服务器配置文件 支持ts和json格式, 可配置多个用于区分运行时环境
+│   ├── app.json
+│   └── lua                     // lua脚本目录
+│       ├── index.ts            // lua脚本导出口
+│       └── statList.lua        // 自定义redis lua脚本
+├── tsconfig.json               // ts编译配置
+├── types                       // ts类型描述
+│   ├── server.d.ts             // 默认: /// <reference types="glede-server/types" />
+│   └── redis-lua.ts            // 拓展redis指令类型描述
+├── controllers                 // DAO, 数据操作对象
+│   └── cat.ts
+├── demos                       // 基础使用方式
+├── crons                       // 定时事务
+│   └── test.ts
+├── logs                        // 日志目录
+│   ├── apis.json               // 配置开启swagger, 在运行时执行生成覆盖接口文档
+│   ├── error.log               // 必须存在, 初始化启动需要手动创建
+│   └── routers.txt             // 最新的路由信息, 服务器的路由树
+└── routers                     // 接口目录
+    ├── api
+    ├── common
+    └── openapi
+```
+
+## 路由类
 
 ```ts
 import { GledeRouter, Get, Post } from 'glede-server';
@@ -126,19 +164,20 @@ export default class extends GledeRouter {
     /**
      * 删除动态
      */
-    @Get('/del/:id') @NeedAuth('admin')
+    @Get('/del/:id', { schema: schema.delPost })
+    @NeedAuth('user')
     async delPost(this: GledeThis, data: GledeReqData) {
-
         // Token鉴权通过, 这里可以看到用户身份
-        const token = this.getToken();
-        console.log(token.role, token.uid, token.exp);
+        const { token, payload } = this.getToken();
+        console.log(payload.role, payload.uid, payload.exp);
 
-        // 非身份管理 admin / super / root, 只能删除自己的文章
-        if (!['admin', 'super', 'root'].includes(token.role)) {
-            Post.updateOne({ uid, postId: data.params.id });
+        // 指定身份 root 0 | super 1 | admin 2 可下架用户文章
+        // const ROLE_USER = 3; 参考类型描述文件 getToken 方法
+        if (payload.role < ROLE_USER) {
+            Post.deleteOne({ postId: data.params.id });
         }
 
-        // 否则直接删除
+        // 非管理员, 只能删除自己的文章
         else {
             Post.deleteOne({ postId: data.params.id });
         }
@@ -324,7 +363,7 @@ else fail -> else -> else fail -> else fail -> else fail
 ```
 
 
-### 捆绑数据库链接
+### 数据库驱动
 
 - `mongoose`
 

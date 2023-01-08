@@ -10,12 +10,12 @@
     "apiDocs": {
         "openapi": {
             "info": {
-                "title": "happy-pub-server API",
-                "description": "泡泡校园业务API",
+                "title": "<页面名称>",
+                "description": "<页面描述>",
                 "version": "1.0.0"
             },
             "externalDocs": {
-                "url": "https://plog.top",
+                "url": "<测试接口地址>",
                 "description": "访问预发布环境"
             },
             "servers": [

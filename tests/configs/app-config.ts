@@ -6,6 +6,8 @@
 
 'use strict';
 
+import luaScript from './lua';
+
 const {
     /**
      * Redis 鉴权信息
@@ -64,7 +66,8 @@ export default {
         hideUntagged: false
     },
     redis: {
-        password: REDIS_AUTH
+        password: REDIS_AUTH,
+        scripts: luaScript
     },
     mongodb: {
         url: `mongodb://${MONGO_USER}:${MONGO_AUTH}@127.0.0.1:27017/localService`

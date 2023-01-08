@@ -9,7 +9,7 @@ import { allSchema, singleSchema } from './schema';
 // import Cat from '@/tests/controllers/cat';
 
 export class Router extends GledeRouter {
-    @Get('/all', { schema: allSchema })
+    @Get('/all', { schema: allSchema }) @NeedAuth('super')
     getAll (this: GledeThis, data: GledeReqData) {
         // no return sames like follow:
         // return;
@@ -44,7 +44,7 @@ export class Router extends GledeRouter {
     }
 
     // /api/v2/user/:id
-    @Get('/:id', { schema: singleSchema, version: 'v2' }) @NeedAuth('admin')
+    @Get('/:id', { schema: singleSchema, version: 'v2' }) @NeedAuth('user')
     getUserV2 (this: GledeThis, data: GledeReqData): GledeResData {
         // this.setHeader('x-user-agent', 'wtf');
         // this.hasHeader('referer');

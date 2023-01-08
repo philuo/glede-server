@@ -4,8 +4,6 @@
  * @author Perfumere
  */
 
-import type { GledeGetSchema, GledePostSchema } from "@/types/export";
-
 export const allSchema = {
     summary: '获取全部用户摘要列表',
     description: '超管权限接口, 获取全部信息',
