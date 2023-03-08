@@ -1,6 +1,6 @@
 {
   "name": "glede-server",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "Web业务服务器",
   "author": "Perfumere<1061393710@qq.com>",
   "main": "index.ts",

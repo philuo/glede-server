@@ -65,23 +65,23 @@ export default {
         },
         hideUntagged: false
     },
-    redis: {
-        password: REDIS_AUTH,
-        scripts: luaScript
-    },
-    mongodb: {
-        url: `mongodb://${MONGO_USER}:${MONGO_AUTH}@127.0.0.1:27017/localService`
-    },
+    // redis: {
+    //     password: REDIS_AUTH,
+    //     scripts: luaScript
+    // },
+    // mongodb: {
+    //     url: `mongodb://${MONGO_USER}:${MONGO_AUTH}@127.0.0.1:27017/localService`
+    // },
     token: {
         salt: TOKEN_SALT,
         period: 3600
     },
-    mailer: [
-        {
-            host: 'smtp.feishu.cn',
-            user: '__test@philuo.com',
-            pass: MAIL_PWD,
-            nums: 600
-        }
-    ]
+    // mailer: [
+    //     {
+    //         host: 'smtp.feishu.cn',
+    //         user: '__test@philuo.com',
+    //         pass: MAIL_PWD,
+    //         nums: 600
+    //     }
+    // ]
 };

@@ -108,7 +108,7 @@ export function __genUrl(
     path: string,
     subpath: string
 ) {
-    return join('/', type, version, path, subpath);
+    return join('/', type, version, path, subpath).replace(/\\/g, '/');
 }
 
 /**
