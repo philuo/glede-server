@@ -3,8 +3,8 @@
     "compilerOptions": {
         "target": "ESNext",
         "experimentalDecorators": true,
-        "module": "ESNext",
-        "moduleResolution": "Node16",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "resolveJsonModule": true,
         "paths": {
             "@/*": ["./*"]

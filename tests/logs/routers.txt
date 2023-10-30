@@ -1,15 +1,8 @@
-└── / (GET)
-    / (HEAD)
-    └── api
-        ├── /
-        │   ├── user
-        │   │   └── /all (GET)
-        │   │       /all (HEAD)
-        │   └── v
-        │       ├── 1/user/
-        │       │   └── :id (GET)
-        │       │       :id (HEAD)
-        │       └── 2/user/
-        │           └── :id (GET)
-        │               :id (HEAD)
-        └── /v1/user/:id (OPTIONS)
+└── / (GET, HEAD)
+    └── api/
+        ├── user/all (GET, HEAD)
+        └── v
+            ├── 1/user/
+            │   └── :id (OPTIONS, GET, HEAD)
+            └── 2/user/
+                └── :id (GET, HEAD)
