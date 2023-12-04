@@ -4,4 +4,4 @@
  * @author Perfumere
  */
 
-export { validate, schedule } from '@yuo/node-cron';
+export { validate, schedule, getTasks } from '@yuo/node-cron';

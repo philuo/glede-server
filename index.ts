@@ -11,7 +11,8 @@ import {
     createMailer,
     sendMail,
     schedule,
-    validate
+    validate,
+    getTasks
 } from './utils';
 
 export const GledeStaticUtil = {
@@ -20,7 +21,8 @@ export const GledeStaticUtil = {
     createTokenUtil,
     createMailer,
     schedule,
-    validate
+    validate,
+    getTasks
 };
 
 /**

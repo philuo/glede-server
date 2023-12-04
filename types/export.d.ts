@@ -531,6 +531,13 @@ export namespace GledeStaticUtil {
      * @param filePath 文件路径
      */
     export function schedule(cronStr: string, filePath: string): GledeBGScheduleTask;
+
+    /**
+     * 生成事务并返回控制手柄
+     * @param cronStr cron规则描述
+     * @param filePath 文件路径
+     */
+    export function getTasks(): Map<string | number | symbol, GledeBGScheduleTask>;
 }
 
 /** 同一进程处理事务 */
