@@ -638,7 +638,7 @@ export namespace GledeStaticUtil {
 
         /**
          * 输出info级别日志 0 红色
-         * [2023-12-10 03:14:32] [INFO] $message
+         * [2023-12-10 03:14:32] [ERROR] $message
          */
         error(message: string): void;
 
@@ -650,7 +650,7 @@ export namespace GledeStaticUtil {
 
         /**
          * 输出info级别日志 2 绿色
-         * [2023-12-10 03:14:32] [ERROR] $message
+         * [2023-12-10 03:14:32] [INFO] $message
          */
         info(message: string): void;
 
