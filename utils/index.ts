@@ -9,4 +9,6 @@ export * from './db';
 export * from './handler';
 export * from './mailer';
 export * from './token';
+export * from './sign';
+export * from './log';
 export * from './util';

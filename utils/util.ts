@@ -6,7 +6,6 @@
 
 import { readFileSync } from 'fs';
 import { join, resolve } from 'path';
-import { __initMongo, __initRedis } from './db';
 
 /**
  * HTTP通信 [JSON校验](https://json-schema.apifox.cn/#数据类型)

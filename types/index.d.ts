@@ -39,9 +39,9 @@ interface RouterParams {
 declare type GledeRouterRecord = Record<symbol, RouterParams>;
 declare type GledeResData = GledeResError | GledeResSuccess;
 
-type ReqContentHeader = 'accept-language' | 'accept-encoding' | 'accept' | 'range';
+type ReqContentHeader = 'accept-language' | 'accept-encoding' | 'accept' | 'range' | 'content-type' | 'content-length';
 type ReqOriginHeader = 'user-agent' | 'referer' | 'host' | 'x-real-ip';
-type ReqPayloadHeader = 'authorization' | 'cookie';
+type ReqPayloadHeader = 'authorization' | 'cookie' | 'signature';
 type ReqCacheHeader = 'connection' | 'cache-control';
 declare type GledeReqHeader = ReqContentHeader | ReqOriginHeader | ReqPayloadHeader | ReqCacheHeader;
 
@@ -81,6 +81,15 @@ declare interface GledeIpRegion {
 interface GledeTokenOpts {
     /** 分发加盐 */
     salt: string;
+    /** 令牌有效期 */
+    period: number;
+}
+
+interface GledeSignOpts {
+    /** 分发加盐 */
+    salt: string;
+    /** baseKey, 用于生成加签key */
+    key: string;
     /** 令牌有效期 */
     period: number;
 }
@@ -181,6 +190,9 @@ declare interface GledeServerOpts {
     /** token config */
     token?: GledeTokenOpts;
 
+    /** sign config */
+    sign?: GledeSignOpts;
+
     /** mailer config */
     mailer?: GledeMailerOpts[];
 }
@@ -191,6 +203,12 @@ interface TokenParam {
 }
 
 declare interface GledeThis {
+    /** 请求方法 */
+    method: 'GET' | 'POST';
+    /**
+     * 请求路径 “/?” 开头
+     */
+    url: string;
     /**
      * 获取请求源的IPv4
      */
@@ -421,6 +439,22 @@ declare interface GledeTokenUtil {
      * `2~6验证失败, 2解析错误, 3未生效, 4已失效, 5已篡改, 6权限不足`
      */
     verify(token: string, role: number): 0 | 1 | 2 | 3 | 4 | 5 | 6;
+}
+
+declare interface GledeSignUtil {
+    /**
+     * 签发签名
+     */
+    sign(): string;
+
+    /**
+     * 验证签名
+     * @param sign string
+     * @returns 验证状态
+     * `0、1验证通过, 1表示sign即将过期`
+     * `2~5验证失败, 2解析错误, 4已失效, 5已篡改`
+     */
+    verify(sign: string): 0 | 1 | 2 | 4 | 5;
 }
 
 declare interface GledeMailMessage {

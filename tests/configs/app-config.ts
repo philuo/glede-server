@@ -76,6 +76,11 @@ export default {
         salt: TOKEN_SALT,
         period: 3600
     },
+    sign: {
+        salt: 'glede-server',
+        key: '007',
+        period: 3600
+    }
     // mailer: [
     //     {
     //         host: 'smtp.feishu.cn',

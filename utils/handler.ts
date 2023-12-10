@@ -28,6 +28,8 @@ export function __getToken(req: FastifyRequest) {
 
 export function __genHandlerUtils(req: FastifyRequest, res: FastifyReply) {
     return {
+        url: req.url,
+        method: req.method,
         getIp() {
             return __getIp(req);
         },

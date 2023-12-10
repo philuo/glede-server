@@ -39,6 +39,35 @@ export function NeedAuth(level: GledeAuthLevel) {
 }
 
 /**
+ * Post请求体加签验证
+ */
+export function NeedSign() {
+    const signSymbol = __genSymbol('sign');
+
+    return function (target, name) {
+        if (target[name][signSymbol]) {
+            __throwError(`@NeedAuth has already exists on handler ${name}`);
+        }
+
+        target[name][signSymbol] = signSymbol;
+    } 
+}
+
+/**
+ * TODO: 性能录制
+ */
+function PerfRec() {
+
+}
+
+/**
+ * TODO: 应用层安全设置
+ */
+function Safe() {
+
+}
+
+/**
  * [设置跨域资源共享](https://www.php.cn/manual/view/35589.html)
  * @param origin Access-Control-Allow-Origin; Default: *
  * @param method Access-Control-Allow-Methods; Default: `GET,POST`

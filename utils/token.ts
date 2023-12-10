@@ -51,7 +51,7 @@ function __verify(
         return 6;
     }
 
-    // 有效时间范围：exp(失效时间点) >= now >= ntf(生效时间点)
+    // 有效时间范围：exp(失效时间点) >= now >= nbf(生效时间点)
     if (nbf && nbf > now) {
         return 3;
     }

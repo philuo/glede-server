@@ -9,6 +9,7 @@ import { readdirSync, existsSync, writeFile } from 'fs';
 import {
     __genMailer,
     __genTokenUtil,
+    __genSignUtil,
     __genHandlerUtils,
     __getSymbols,
     __genSymbol,
@@ -17,7 +18,7 @@ import {
     __throwError
 } from '../utils';
 import { GledeRouter, getServerInstance } from './base';
-import { __preprocessRouter, __preprocessCors } from '../plugins';
+import { __preprocessRouter, __preprocessCors, __preprocessSign } from '../plugins';
 import type { FastifyInstance, FastifyRequest ,FastifyReply } from 'fastify';
 
 /**
@@ -45,6 +46,9 @@ async function __registryPlugins(app: FastifyInstance, opts: GledeServerOpts) {
     }
     if (opts.token) {
         __genTokenUtil(opts);
+    }
+    if (opts.sign) {
+        __genSignUtil(opts);
     }
     if (opts.mailer) {
         __genMailer(opts);
@@ -164,6 +168,13 @@ const PREHANDL_ERR = {
     msg: 'noauth'
 };
 
+/** 验签失败的响应体 */
+const SIGN_ERR = {
+    code: 403,
+    data: null,
+    msg: 'forbidden'
+};
+
 /** 处理成功空响应 */
 const SUCCESS_EMPTY = {
     code: 0,
@@ -173,6 +184,9 @@ const SUCCESS_EMPTY = {
 function __genRouterHandler(handler) {
     if (__checkType(handler, 'asyncfunction')) {
         return async (req: FastifyRequest, res: FastifyReply) => {
+            if (!__preprocessSign(req, res, handler)) {
+                return SIGN_ERR;
+            }
             if (!__preprocessRouter(req, res, handler)) {
                 return PREHANDL_ERR;
             }
@@ -193,6 +207,9 @@ function __genRouterHandler(handler) {
     }
 
     return (req: FastifyRequest, res: FastifyReply) => {
+        if (!__preprocessSign(req, res, handler)) {
+            return SIGN_ERR;
+        }
         if (!__preprocessRouter(req, res, handler)) {
             return PREHANDL_ERR;
         }

@@ -7,22 +7,27 @@ import {
     getRedisInstance,
     getMongoInstance,
     __getTokenUtil as getTokenUtil,
+    __getSignUtil as getSignUtil,
     createTokenUtil,
+    createSignUtil,
     createMailer,
     sendMail,
     schedule,
     validate,
-    getTasks
+    getTasks,
+    Logger
 } from './utils';
 
 export const GledeStaticUtil = {
     getRedisInstance,
     getMongoInstance,
     createTokenUtil,
+    createSignUtil,
     createMailer,
     schedule,
     validate,
-    getTasks
+    getTasks,
+    Logger
 };
 
 /**
@@ -30,11 +35,12 @@ export const GledeStaticUtil = {
  */
 export const GledeUtil = {
     getTokenUtil,
+    getSignUtil,
     sendMail
 };
 
 export { Server } from './libs/init';
 export { printRouters } from './libs/route';
 export { GledeRouter, getServerInstance } from './libs/base';
-export { Get, Post, Cors, NeedAuth } from './libs/decorator';
+export { Get, Post, Cors, NeedAuth, NeedSign } from './libs/decorator';
 export { Schema, ObjectId, Model, Transaction } from './utils';

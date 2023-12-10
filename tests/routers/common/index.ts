@@ -1,4 +1,4 @@
-import { Get, GledeRouter, GledeUtil, GledeStaticUtil } from '@/index';
+import { Get, Post, GledeRouter, NeedSign, GledeUtil, GledeStaticUtil } from '@/index';
 
 const Schema = {
     summary: 'xx',
@@ -21,7 +21,21 @@ const Schema = {
 
 export class Router extends GledeRouter {
     @Get('/', { schema: Schema })
-    test(this: GledeThis) {
+    @Post('/', { schema: Schema })
+    @NeedSign()
+    test(this: GledeThis, data) {
+        console.log(data)
         return { code: 0, data: this.getRegion('39.107.94.26') };
+    }
+
+    @Get('/login')
+    testLogin() {
+        // const signature = GledeUtil.getSignUtil().sign();
+        return {
+            code: 0,
+            data: {
+                sign: GledeUtil.getSignUtil().sign()
+            }
+        };
     }
 }

@@ -207,6 +207,70 @@ Default: noauth
 
 - `@NeedAuth(role: string)`
 
+### 验签装饰器
+
+> 签名验证, 是否允许Handler处理
+
+- `@NeedSign()`
+
+```ts
+/**
+ * 1. 客户端 摘要过程
+ */
+
+// 通过登陆等鉴权接口拿到 'MTcwMjE0MTE0Mzg5M183ODk4.BGZh4oyyHMWAWkiVSJptV5yNb7w'
+
+// 切割取第二部分缓存
+const signKey = 'BGZh4oyyHMWAWkiVSJptV5yNb7w';
+
+// 切割取第一部分, 需要随请求报文发送到服务端
+const content = 'MTcwMjE0MTE0Mzg5M183ODk4';
+
+// 要发送的报文体
+const payload = JSON.stringify({ name: 'Kitty' });
+
+// 同服务端约定的本项目的key
+const baseKey = '007';
+
+// 请求方法 uppercase
+const method = 'POST' as 'POST' | 'GET';
+
+// /开头的url上的query
+const query = '/?test=001';
+
+// 一个空格分割method 和 query
+const head = method + ' ' + query;
+
+function stringify(content) {
+  if (method === 'GET') {
+    return '';
+  }
+  if (method === 'POST') {
+    return typeof content === 'string' ? content : JSON.stringify(content);
+  }
+
+  return '';
+}
+
+function getSign(head, payload) {
+  return content + '.' + sha1(signKey + baseKey + head + stringify(payload));
+}
+
+function sendRequest() {
+  return fetch('http://localhost:3020/?test=001', {
+    method: 'POST',
+    headers: {
+      signature: getSign(head, payload)
+    },
+    body: stringify(payload)
+  }).then(res => res.json());
+}
+
+sendRequest().then(res => {
+  console.log(res);
+});
+```
+
 ## 数据库操作
 
 [mongoose 操作文档](https://mongoosejs.com/docs/api/model.html)
@@ -349,6 +413,40 @@ export Router extends GledeRouter {
 
 ## 集成功能
 
+### 自定义日志输出
+
+```ts
+// @/utils/log.ts
+import { GledeStaticUtil } from 'glede-server';
+import { join } from 'path';
+
+export const logger = new GledeStaticUtil.Logger({
+    // 输出位置, 默认[1]输出到日志文件; [0]输出到控制台, [0, 1]输出到控制台和文件
+    target: [1],
+    // 日志输出的目录, 默认存储在运行node的路径下的logs路径下
+    // !import 注意服务运行中不可以删除 dir目录
+    dir: join(__dirname, 'logs'),
+    // 日志文件名 默认 glede-server.log 如果开启轮转会自动补充后缀
+    // !import 注意服务运行中不可以删除 filename文件, 其他轮转生成的文件可以移动或删除
+    filename: 'glede-server.log',
+    // 日志轮转, 到期生成新的日志文件格式如下 20231210-1411-03-glede-server.log
+    interval: '30d',
+    // 日志大小, 超限生成新的日志文件格式如下 20231210-1411-03-glede-server.log
+    size: '10M',
+    // 控制单个文件大小, 注意开启压缩再使用 超过限制后旧文件会被压缩
+    // maxSize: '10M',
+    // 是否开启压缩, 默认关闭 不允许设置false, 关闭不设置该属性即可
+    // compress: true
+    // 最多保留的最近的日志文件和压缩包数量, 默认全部保留不设置即可
+    // maxFiles: 30
+});
+
+logger.error('123'); // level === 0
+logger.warn('123');  // level === 1
+logger.info('123');  // level === 2
+logger.log('123', 2);   // 仅输出到控制台, 不干扰日志文件(level可选默认2 INFO级别)
+```
+
 ### Token签发与验证
 
 - 实现分发（sign, unsign）
@@ -391,7 +489,6 @@ else fail -> else -> else fail -> else fail -> else fail
 
 [@yuo/node-cron](https://github.com/philuo/node-cron)
 
-## TODO
 
 ### 定时任务
 

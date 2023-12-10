@@ -10,6 +10,12 @@ import type { Mongoose, ClientSession } from 'mongoose'
 import type { Redis } from 'ioredis';
 
 interface GledeThis {
+    /** 请求方法 */
+    method: 'GET' | 'POST';
+    /**
+     * 请求路径 “/?” 开头
+     */
+    url: string;
     /**
      * 获取请求源的IPv4
      */
@@ -68,6 +74,15 @@ type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
 interface GledeTokenOpts {
     /** 分发加盐 */
     salt: string;
+    /** 令牌有效期 */
+    period: number;
+}
+
+interface GledeSignOpts {
+    /** 分发加盐 */
+    salt: string;
+    /** baseKey, 用于生成加签key */
+    key: string;
     /** 令牌有效期 */
     period: number;
 }
@@ -167,6 +182,9 @@ interface GledeServerOpts {
 
     /** token config */
     token?: GledeTokenOpts;
+
+    /** sign config */
+    sign?: GledeSignOpts;
 
     /** mailer config */
     mailer?: GledeMailerOpts[];
@@ -401,6 +419,11 @@ export function Cors(
  */
 export function NeedAuth(level: GledeAuthLevel): (target: any, name: any) => void;
 
+/**
+ * 设置页签校验, 防止中间人截获请求体并篡改
+ */
+export function NeedSign(): (target: any, name: any) => void;
+
 /** 路由基类 */
 export abstract class GledeRouter {
     readonly [prop: string]: (this: GledeThis, data: GledeReqData) => GledeResData | Promise<GledeResData>
@@ -456,6 +479,22 @@ interface GledeTokenUtil {
     verify(token: string, role: number): 0 | 1 | 2 | 3 | 4 | 5 | 6;
 }
 
+interface GledeSignUtil {
+    /**
+     * 签发签名
+     */
+    sign(): string;
+
+    /**
+     * 验证签名
+     * @param sign string
+     * @returns 验证状态
+     * `0、1验证通过, 1表示sign即将过期`
+     * `2~5验证失败, 2解析错误, 4已失效, 5已篡改`
+     */
+    verify(sign: string): 0 | 1 | 2 | 4 | 5;
+}
+
 interface GledeMailMessage {
     /** 接收方邮件URL */
     to: string;
@@ -482,11 +521,55 @@ export namespace GledeUtil {
     /** 获取TokenUtil */
     export function getTokenUtil(): GledeTokenUtil;
 
+    /** 获取SignUtil */
+    export function getSignUtil(): GledeSignUtil;
+
     /**
      * 使用Mailer发送业务邮件
      * for example: 验证码, 安全认证, 订阅提醒
      */
     export function sendMail(message: GledeMailMessage): any;
+}
+
+export interface LoggerOpts {
+    /**
+     * 日志存储目录
+     */
+    dir?: string;
+    /**
+     * 输出目标 0 终端 ｜ 1 文件, 默认缺省 [1]
+     * 默认[1]输出到日志文件; [0]输出到控制台, [0, 1]输出到控制台和文件
+     */
+    target?: Array<0 | 1>;
+    /**
+     * 日志文件名, 会被轮转和最大提及限制拆分
+     * 默认 glede-server.log 如果开启轮转会自动补充后缀
+     */
+    filename?: string;
+    /**
+     * 轮转时间 分m 时h 天d 月M, 超时自动生成新文件
+     * 格式如下 20231210-1411-03-glede-server.log
+     */
+    interval?: string;
+    /**
+     * 单个日志文件最大的大小 10M, 超大自动生成新文件
+     * 格式如下 20231210-1411-03-glede-server.log
+     * 1024B 表示 1KB; 1M 表示 1MB; 1G 表示 1GB
+     */
+    size?: string;
+    /**
+     * 控制单个文件大小, 注意开启压缩是再使用 超过限制后旧文件会被压缩
+     * 同size属性
+     */
+    maxSize?: string;
+    /**
+     * 是否开启压缩
+     */
+    compress?: true | 'gzip';
+    /**
+     * 最多保留日志文件和压缩包数量, 从旧向新按时间倒序删除
+     */
+    maxFiles?: number;
 }
 
 /**
@@ -500,6 +583,14 @@ export namespace GledeStaticUtil {
      * @param opts.period 有效时长
      */
     export function createTokenUtil(opts: GledeTokenOpts): GledeTokenUtil;
+
+    /**
+     * 通过配置获取对应的Sign工具
+     * @param opts.salt 秘钥字符串
+     * @param opts.key 有效时长
+     * @param opts.period 有效时长
+     */
+    export function createSignUtil(opts: GledeSignOpts): GledeSignUtil;
 
     /**
      * 通过配置获得Mailer, 使用限制由开发者自己实现
@@ -538,6 +629,37 @@ export namespace GledeStaticUtil {
      * @param filePath 文件路径
      */
     export function getTasks(): Map<string | number | symbol, GledeBGScheduleTask>;
+
+    /**
+     * 流式日志输出
+     */
+    export class Logger {
+        constructor(opts: LoggerOpts);
+
+        /**
+         * 输出info级别日志 0 红色
+         * [2023-12-10 03:14:32] [INFO] $message
+         */
+        error(message: string): void;
+
+        /**
+         * 输出info级别日志 1 黄色
+         * [2023-12-10 03:14:32] [WARN] $message
+         */
+        warn(message: string): void;
+
+        /**
+         * 输出info级别日志 2 绿色
+         * [2023-12-10 03:14:32] [ERROR] $message
+         */
+        info(message: string): void;
+
+        /**
+         * 输出到控制台, 不同level对应颜色不同; 默认info 绿色
+         * [2023-12-10 03:14:32] [$level] $message
+         */
+        log(message: string, level?: 0 | 1 | 2): void;
+    }
 }
 
 /** 同一进程处理事务 */
