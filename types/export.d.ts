@@ -186,6 +186,9 @@ interface GledeServerOpts {
     /** sign config */
     sign?: GledeSignOpts;
 
+    /** cron config */
+    crons?: Record<string, CronItem>;
+
     /** mailer config */
     mailer?: GledeMailerOpts[];
 }
@@ -572,6 +575,35 @@ export interface LoggerOpts {
     maxFiles?: number;
 }
 
+export interface CronOpts {
+    /**
+     * 是否在开启事务时立即运行一次, 默认 false
+     */
+    runOnInit?: boolean;
+    /**
+     * 是否开启事务, 默认 true
+     */
+    scheduled?: boolean;
+    /**
+     * 是否开启daemon, 默认 false
+     */
+    recoverMissedExecutions?: boolean;
+    /**
+     * cron表达式
+     */
+    express: string;
+    /**
+     * 时区 Asia/Shanghai, Asia/Kolkata, America/Sao_Paulo
+     * 默认不设置取当前运行环境Date的设置, 默认为js中Date获取的数值
+     */
+    timezone?: string;
+}
+
+/**
+ * cron表达式或事务配置
+ */
+export type CronItem = string | CronOpts;
+
 /**
  * 业务静态工具
  * `创建TokenUtil, Mailer, 获取数据库实例等`
@@ -614,14 +646,14 @@ export namespace GledeStaticUtil {
      * @param cronStr cron规则描述
      * @param func 回调方法
      */
-    export function schedule(cronStr: string, func: Function): GledeScheduleTask;
+    export function schedule(cronStr: string, func: Function, options?: CronItem): GledeScheduleTask;
 
     /**
      * 生成事务并返回控制手柄
      * @param cronStr cron规则描述
      * @param filePath 文件路径
      */
-    export function schedule(cronStr: string, filePath: string): GledeBGScheduleTask;
+    export function schedule(cronStr: string, filePath: string, options?: CronItem): GledeBGScheduleTask;
 
     /**
      * 生成事务并返回控制手柄
