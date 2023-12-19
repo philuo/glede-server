@@ -30,8 +30,8 @@ export function __initRedis(opts: RedisOptions) {
 export function __initMongo(url: string, opts: ConnectOptions) {
     if (!mongoClient) {
         mongoClient = mongoose.connect(url, {
+            autoIndex: false,
             ...opts,
-            autoIndex: false
         });
     }
 }
