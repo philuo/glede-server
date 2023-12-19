@@ -362,10 +362,18 @@ interface JsonSchemaDescription {
     examples?: any[];
 }
 
+interface JsonSchemaCustom {
+    /**
+     * 字段必须实现toString/toJSON, JSON.stingify时被调用
+     * { type: 'object', toString() }
+     */
+    instanceof?: 'custom';
+}
+
 declare type JsonSchema = ((JsonSchemaString | JosnSchemaNumric
     | JosnSchemaObject | JosnSchemaArray | JsonSchemaNormal) & JsonSchemaDescription)
     | JsonSchemaAnyOf | JsonSchemaOneOf | JsonSchemaAllOf
-    | JsonSchemaEnum | JsonSchemaNot;
+    | JsonSchemaEnum | JsonSchemaNot | JsonSchemaCustom;
 
 
 declare interface GledeSchemaBase {

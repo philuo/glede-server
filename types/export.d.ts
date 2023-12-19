@@ -9,6 +9,9 @@ import type { Model as _Model, ConnectOptions } from 'mongoose';
 import type { Mongoose, ClientSession } from 'mongoose'
 import type { Redis } from 'ioredis';
 
+export { Redis } from 'ioredis';
+export * as mongoose from 'mongoose';
+
 interface GledeThis {
     /** 请求方法 */
     method: 'GET' | 'POST';
@@ -269,10 +272,18 @@ interface JsonSchemaDescription {
     examples?: any[];
 }
 
+interface JsonSchemaCustom {
+    /**
+     * 字段必须实现toString/toJSON, JSON.stingify时被调用
+     * { type: 'object', toString() }
+     */
+    instanceof?: 'custom';
+}
+
 type JsonSchema = ((JsonSchemaString | JosnSchemaNumric
     | JosnSchemaObject | JosnSchemaArray | JsonSchemaNormal) & JsonSchemaDescription)
     | JsonSchemaAnyOf | JsonSchemaOneOf | JsonSchemaAllOf
-    | JsonSchemaEnum | JsonSchemaNot;
+    | JsonSchemaEnum | JsonSchemaNot | JsonSchemaCustom;
 
 interface GledeSchemaBase {
     /** 接口名称 */
