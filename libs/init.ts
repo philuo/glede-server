@@ -8,7 +8,12 @@ import { mkdirSync, existsSync } from 'fs';
 import { dirname } from 'path';
 import { __gledeServer } from './base';
 import { __registerRouter } from './route';
-import { __mixinServerOpts, __initMongo, __initRedis } from '../utils';
+import {
+    __mixinServerOpts,
+    __initMongo,
+    __initRedis,
+    __initPg
+} from '../utils';
 
 function __mkDir(opts: GledeServerOpts) {
     let logDir = opts.logger && opts.logger.file ? dirname(opts.logger.file) : '';
@@ -24,6 +29,9 @@ function __initDatabase(opts: GledeServerOpts) {
     }
     if (opts.mongodb) {
         __initMongo(opts.mongodb.url, opts.mongodb.options);
+    }
+    if (opts.pg) {
+        __initPg(opts.pg.url, opts.pg.options);
     }
 }
 

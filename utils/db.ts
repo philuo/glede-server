@@ -6,11 +6,14 @@
 
 import mongoose from 'mongoose';
 import Redis from 'ioredis';
+import { Pool } from 'pg';
 import type { RedisOptions, Redis as RedisInstance } from 'ioredis';
 import type { ConnectOptions } from 'mongoose';
+import type { Pool as PgPool } from 'pg';
 
 let redisClient: RedisInstance;
 let mongoClient;
+let pgClient;
 
 /**
  * 获取Redis实例
@@ -36,6 +39,27 @@ export function __initMongo(url: string, opts: ConnectOptions) {
     }
 }
 
+/**
+ * 获取Pg实例
+ * @param url new pg.Pool options.connectionString
+ * @param opts new pg.Pool options
+ */
+export function __initPg(url: string, opts: PgPoolOptions) {
+    if (!pgClient) {
+        pgClient = new Pool({
+            connectionString: url,
+            max: 30,
+            min: 10,
+            keepAlive: true,
+            idleTimeoutMillis: 600000,
+            connectionTimeoutMillis: 20000,
+            query_timeout: 30000,
+            statement_timeout: 40000,
+            idle_in_transaction_session_timeout: 60000,
+            ...opts
+        });
+    }
+}
 
 export function getRedisInstance() {
     return redisClient;
@@ -43,6 +67,10 @@ export function getRedisInstance() {
 
 export function getMongoInstance() {
     return mongoClient as typeof mongoose;
+}
+
+export function getPgInstance() {
+    return pgClient as PgPool;
 }
 
 export const Schema = mongoose.Schema;

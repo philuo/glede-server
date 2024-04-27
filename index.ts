@@ -6,6 +6,7 @@
 import {
     getRedisInstance,
     getMongoInstance,
+    getPgInstance,
     __getTokenUtil as getTokenUtil,
     __getSignUtil as getSignUtil,
     createTokenUtil,
@@ -21,6 +22,7 @@ import {
 export const GledeStaticUtil = {
     getRedisInstance,
     getMongoInstance,
+    getPgInstance,
     createTokenUtil,
     createSignUtil,
     createMailer,

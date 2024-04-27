@@ -144,6 +144,25 @@ declare interface CronOpts {
     timezone?: string;
 }
 
+interface PgPoolOptions {
+    /** 最大链接数, 默认30 */
+    max?: number;
+    /** 最小链接数, 默认10 */
+    min?: number;
+    /** 是否保持链接, 默认true */
+    keepAlive?: boolean;
+    /** 数量大于最小链接数时, 超出数量最长空闲时间(ms) 默认十分钟, 600000 */
+    idleTimeoutMillis?: number;
+    /** 建立链接超时时间(ms) 默认20000 */
+    connectionTimeoutMillis?: number;
+    /** 查询级别：请求超时时间(ms), 默认30000 */
+    query_timeout?: number;
+    /** 会话级别：SQL语句执行的最长时间, 默认40000 */
+    statement_timeout?: number | false;
+    /** 事务在空闲状态下的最大持续时间, 默认60000 */
+    idle_in_transaction_session_timeout?: number;
+}
+
 /**
  * cron表达式或事务配置
  */
@@ -214,6 +233,14 @@ declare interface GledeServerOpts {
     mongodb?: {
         url: string;
         options?: any;
+    };
+
+    /** postgresql config */
+    pg?: {
+        /** 数据库连接地址, alias: connectionString */
+        url: string;
+        /** 数据库配置 */
+        options: PgPoolOptions;
     };
 
     /** token config */
