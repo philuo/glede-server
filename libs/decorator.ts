@@ -17,7 +17,7 @@ const authRole = ['root', 'super', 'admin', 'user', 'noauth'];
 /**
  * 设置身份鉴权
  */
-export function NeedAuth(level: GledeAuthLevel) {
+function NeedAuth(level: GledeAuthLevel) {
     const authSymbol = __genSymbol('auth');
 
     return function (target, name) {
@@ -41,7 +41,7 @@ export function NeedAuth(level: GledeAuthLevel) {
 /**
  * Post请求体加签验证
  */
-export function NeedSign() {
+function NeedSign() {
     const signSymbol = __genSymbol('sign');
 
     return function (target, name) {
@@ -73,7 +73,7 @@ function Safe() {
  * @param method Access-Control-Allow-Methods; Default: `GET,POST`
  * @param credential Access-Control-Allow-Credentials; `设置此项时要求origin 不能为 *`
  */
-export function Cors(
+function Cors(
     origin: string | string[] = '*',
     method = 'GET,POST',
     credential?: boolean
@@ -159,7 +159,7 @@ function __methodReturnCb(
  * `version = '' -> /openapi/path/subpath`
  * 
  */
-export function Get(
+function Get(
     subpath: string,
     options: GledeGetMethodOpts = __methodOpts
 ) {
@@ -179,9 +179,25 @@ export function Get(
  * 
  * `version = '' -> /openapi/path/subpath`
  */
-export function Post(
+function Post(
     subpath: string,
     options: GledePostMethodOpts = __methodOpts
 ) {
     return __methodReturnCb('POST', subpath, options);
 }
+
+// export global variable GSD
+global.GSD = global.GSD || {} as any;
+global.GSD.Get = Get;
+global.GSD.Post = Post;
+global.GSD.Cors = Cors;
+global.GSD.NeedAuth = NeedAuth;
+global.GSD.NeedSign = NeedSign;
+
+export {
+  Get,
+  Post,
+  Cors,
+  NeedAuth,
+  NeedSign
+};

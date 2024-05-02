@@ -37,3 +37,7 @@ export abstract class GledeRouter {
     readonly [prop: string]: (this: GledeThis, data: GledeReqData) => GledeResData | Promise<GledeResData>
         | void | Promise<void>;
 }
+
+// export global variable GSD
+global.GSD = global.GSD || {} as any;
+global.GSD.GledeRouter = GledeRouter;

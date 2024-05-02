@@ -765,3 +765,18 @@ interface GledeBGScheduleTask {
     /** 事务是否在正常处理中 */
     isRunning(): boolean;
 }
+
+/** GledeServer Decorators */
+interface GSDUtil {
+  Get: typeof Get;
+  Post: typeof Post;
+  Cors: typeof Cors;
+  NeedAuth: typeof NeedAuth;
+  NeedSign: typeof NeedSign;
+  GledeRouter: typeof GledeRouter; 
+}
+
+declare global {
+  /** GledeServer Decorators */
+  var GSD: GSDUtil;
+}
