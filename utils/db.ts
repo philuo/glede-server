@@ -113,8 +113,8 @@ export async function Transaction(func: (session: mongoose.ClientSession) => voi
 
     try {
         await func(session);
-        isCommited = true;
         await session.commitTransaction();
+        isCommited = true;
     }
     catch (err) {
         if (!isCommited) {
