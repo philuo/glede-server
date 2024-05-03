@@ -5,7 +5,7 @@
  */
 
 import { Model, GledeStaticUtil } from 'glede-server';
-import User from '@/controllers/user';
+import User from '#/controllers/user';
 import type { LuaRedis } from '@/types/redis-lua';
 
 const CatSchema = {

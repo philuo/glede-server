@@ -5,7 +5,7 @@
  */
 
 import { Transaction } from 'glede-server';
-import Cat from '@/controllers/cat';
+import Cat from '#/controllers/cat';
 
 /**
  * 注意：事务执行依赖的集合需要事先存在, 否则会抛异常。

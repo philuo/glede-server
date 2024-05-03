@@ -7,7 +7,9 @@
         "moduleResolution": "NodeNext",
         "resolveJsonModule": true,
         "paths": {
-            "@/*": ["./*"]
-        }
+            "@/*": ["./*"],
+            "#/*": ["./tests/*"]
+        },
+        "baseUrl": "."
     }
 }

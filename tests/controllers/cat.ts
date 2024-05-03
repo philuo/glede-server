@@ -44,4 +44,7 @@ const CatUtil = {
     }
 };
 
-export default Model('cat', CatSchema, CatUtil);
+// 注意⚠️：一定要定义引用后导出, 不然可能存在Model重复定义而报错。这个具体的JS/TS解释器有关。
+const Cat = Model('cat', CatSchema, CatUtil);
+
+export default Cat;

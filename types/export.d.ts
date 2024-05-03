@@ -506,7 +506,7 @@ export function ObjectId(id?: string | number | Mongoose['Types']['ObjectId']): 
  * 事务处理块, 保证多集合CRUD数据的一致性
  * @param func CRUD操作集合
  */
-export function Transaction(func: (session: ClientSession) => void | Promise<void>): Promise<void>;
+export function Transaction(func: (session: ClientSession) => any): Promise<void>;
 
 interface GledeTokenUtil {
     /** 签发令牌 */

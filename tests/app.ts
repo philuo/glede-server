@@ -4,8 +4,12 @@
  * @author Perfumere
  */
 
-import { Server, GledeUtil, GledeStaticUtil } from '../index';
+import { Server, GledeUtil, GledeStaticUtil } from '@/index';
+import { serviceEntry } from '#/components/service/entry';
 // import Cat from './controllers/cat';
+
+// initialize common utils
+serviceEntry();
 
 // const app = Server({ conf: 'tests/configs/app.json' });
 const app = Server({ conf: 'tests/configs/app-config.ts' });
@@ -27,6 +31,6 @@ const app = Server({ conf: 'tests/configs/app-config.ts' });
 // });
 // GledeUtil.getTokenUtil();
 
-app.addHook('onClose', () => {
+app.addHook('onError', () => {
     console.log('server should be closed');
 });
