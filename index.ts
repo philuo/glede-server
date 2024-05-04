@@ -48,3 +48,4 @@ export { Get, Post, Cors, NeedAuth, NeedSign } from './libs/decorator';
 export { Schema, ObjectId, Model, Transaction } from './utils';
 export * as mongoose from 'mongoose';
 export * as Redis from 'ioredis';
+export * as pg from 'pg';

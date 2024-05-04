@@ -12,7 +12,7 @@ import type { Redis } from 'ioredis';
 
 export { Redis } from 'ioredis';
 export * as mongoose from 'mongoose';
-
+export * as pg from 'pg';
 
 interface GledeThis {
     /** 请求方法 */
