@@ -21,8 +21,7 @@
         "types/**/*",
         "libs/*.ts",
         "util/*.ts",
-        "plugins/*.ts"
-        // Pack comment, test uncomment next-line
-        , "tests/**/*"
+        "plugins/*.ts",
+        "jssdk/**/*"
     ]
 }

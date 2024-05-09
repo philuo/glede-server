@@ -19,7 +19,7 @@ export function __gledeServer(opts: GledeServerOpts) {
         return app;
     }
 
-    return app = fastify({ logger: opts.logger });
+    return app = fastify(opts.appConf);
 }
 
 /**

@@ -4,15 +4,15 @@
  * @author Perfumere
  */
 
-import { Server, GledeUtil, GledeStaticUtil } from '@/index';
-import { serviceEntry } from '#/components/service/entry';
+// import { Server, GledeUtil, GledeStaticUtil } from '@/index';
+// import { serviceEntry } from '#/components/service/entry';
 // import Cat from './controllers/cat';
-
+import { Server } from '../dist';
 // initialize common utils
-serviceEntry();
+// serviceEntry();
 
 // const app = Server({ conf: 'tests/configs/app.json' });
-const app = Server({ conf: 'tests/configs/app-config.ts' });
+const app = Server({ conf: './configs/app-config.ts' });
 
 // After Server is start
 // GledeStaticUtil.getMongoInstance(); // 获取Mongoose实例

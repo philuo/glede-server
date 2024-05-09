@@ -3,7 +3,7 @@
  * @date 2022-06-24
  * @author Perfumere
  */
-
+import multer from 'fastify-multer';
 import {
     __genSymbol,
     __genSchema,
@@ -186,6 +186,30 @@ function Post(
     return __methodReturnCb('POST', subpath, options);
 }
 
+
+/**
+ * FormData(multipart)解析器
+ * @doc https://www.npmjs.com/package/fastify-multer
+ */
+function Multer(opts: any, getOpts: any) {
+    const multipartSymbol = __genSymbol('multipart');
+
+    return function (target, name) {
+        if (target[name][multipartSymbol]) {
+            __throwError(`@Multer has already exists on handler ${name}`);
+        }
+        if (!__checkType(opts, 'object')) {
+            __throwError(`@Multer get error opts on handler ${name}`);
+        }
+        if (!__checkType(getOpts, 'object') && !__checkType(getOpts, 'array')) {
+            __throwError(`@Multer get error getOpts on handler ${name}`);
+        }
+
+        target[name][multipartSymbol] = { opts, getOpts };
+    };
+}
+
+
 // export global variable GSD
 global.GSD = global.GSD || {} as any;
 global.GSD.Get = Get;
@@ -193,11 +217,13 @@ global.GSD.Post = Post;
 global.GSD.Cors = Cors;
 global.GSD.NeedAuth = NeedAuth;
 global.GSD.NeedSign = NeedSign;
+global.GSD.Multer = Multer;
 
 export {
   Get,
   Post,
   Cors,
   NeedAuth,
-  NeedSign
+  NeedSign,
+  Multer
 };

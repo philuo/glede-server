@@ -6,6 +6,7 @@
 
 import { resolve } from 'path';
 import { readdirSync, existsSync, writeFile } from 'fs';
+import multer from 'fastify-multer';
 import {
     __genMailer,
     __genTokenUtil,
@@ -19,7 +20,7 @@ import {
 } from '../utils';
 import { GledeRouter, getServerInstance } from './base';
 import { __preprocessRouter, __preprocessCors, __preprocessSign } from '../plugins';
-import type { FastifyInstance, FastifyRequest ,FastifyReply } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 
 /**
  * 获取路由信息, 默认记录在logs/routers.txt
@@ -137,6 +138,7 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
             handler,
         } = routerData[symbol];
         const cors = handler[__genSymbol('cors')];
+        const multipart = handler[__genSymbol('multipart')];
         const url = __genUrl(type, version, path, subpath);
 
         const router = {
@@ -155,6 +157,28 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
                 __preprocessCors(req, res, cors);
                 res.send();
             });
+        }
+
+        if (multipart) {
+            const upload = multer(multipart.opts);
+            const getOpts = multipart.getOpts;
+            let preHandler: any;
+
+            if (getOpts.single) {
+                preHandler = upload.single(getOpts.single);
+            }
+            else if (
+                __checkType(getOpts, 'object') &&
+                __checkType(getOpts.name, 'string') &&
+                __checkType(getOpts.maxCount, 'number')
+            ) {
+                preHandler = upload.array(getOpts.name, getOpts.maxCount);
+            }
+            if (__checkType(getOpts, 'array')) {
+                preHandler = upload.fields(getOpts);
+            }
+
+            router.preHandler = preHandler;
         }
 
         app.route(router);
@@ -195,7 +219,15 @@ function __genRouterHandler(handler) {
     
             const processRes = await handler.call(
                 __genHandlerUtils(req, res),
-                { body, params, query }
+                {
+                    body,
+                    params,
+                    query,
+                    // @ts-ignore
+                    file: req.file,
+                    // @ts-ignore
+                    files: req.files
+                }
             );
     
             if (processRes === undefined || processRes === null) {

@@ -72,7 +72,7 @@ export function __getSymbols(target: any) {
 }
 
 export function __mixinServerOpts(opts: GledeServerOpts) {
-    const options = opts || {};
+    const options = Object.assign({}, opts);
 
     if (__checkType(options.conf, 'string')) {
         try {
@@ -93,9 +93,11 @@ export function __mixinServerOpts(opts: GledeServerOpts) {
         options.routerDir = 'routers';
     }
     if (__checkType(options.logger, 'undefined')) {
-        options.logger = { level: 'error', file: 'logs/error.log' };
+        options.logger = false;
     }
 
+    options.appConf = options.appConf || {} as GledeServerOpts['appConf'];
+    options.appConf.logger = options.logger;
     options.host = options.host || '0.0.0.0';
 
     return options;

@@ -4,7 +4,7 @@
  * @author Perfumere
  */
 
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { Model as _Model, ConnectOptions } from 'mongoose';
 import type { Mongoose, ClientSession } from 'mongoose';
 import type { Pool } from 'pg';
@@ -61,6 +61,36 @@ interface GledeThis {
      * 指定字段, 查看是否存在于响应头中
      */
     hasHeader: (key: string) => void;
+    /**
+     * Fastify.Request
+     */
+    req: GledeRequest;
+    /**
+     * Fastify.Reply
+     */
+    res: GledeReply;
+}
+
+export interface GledeReqFile {
+    /** Field name specified in the form */
+    fieldname: string;
+    /** Name of the file on the user's computer */
+    originalname: string;
+    /** Encoding type of the file */
+    encoding: string;
+    /** Mime type of the file */
+    mimetype: string;
+    /** Size of the file in bytes */
+    size?: number;
+    /** The folder to which the file has been saved (DiskStorage) */
+    destination?: string;
+    /** The name of the file within the destination (DiskStorage) */
+    filename?: string;
+    /** Location of the uploaded file (DiskStorage) */
+    path?: string;
+    /** A Buffer of the entire file (MemoryStorage) */
+    buffer?: Buffer;
+    stream?: NodeJS.ReadableStream;
 }
 
 interface TokenParam {
@@ -72,6 +102,21 @@ interface GledeReqData {
     query: Record<string, any> & TokenParam;
     body: Record<string, any> & TokenParam;
     params: Record<string, any>;
+    /**
+     * multipart/form-data single file
+     * - 使用`@Multer({}, { single: '$fieldName' })`
+     * - data.file -> GledeReqFile
+     */
+    file: GledeReqFile;
+
+    /**
+     * multipart/form-data multi files
+     * - 使用 `@Multer({}, { array: '$fieldName', maxCount: 5 })`
+     * - 使用 `@Multer({}, [{ name: '$filedName1', maxCount: 5 }, { name: '$filedName2', maxCount: 1 }] })`
+     * - data.files['$filedName1'] -> GledeReqFile[];
+     * - data.files['$filedName2'][0] -> GledeReqFile
+     */
+    files: FilesInRequest;
 }
 
 type GledeAuthLevel = 'noauth' | 'user' | 'admin' | 'super' | 'root';
@@ -173,6 +218,30 @@ interface GledeServerOpts {
          */
         file?: string;
     } | false;
+
+    /**
+     * Fastify配置
+     */
+    appConf?: {
+        /** 请求体最大字节数, 默认1MB */
+        bodyLimit: number;
+
+        /**
+         * Fastify日志配置
+         * Default: { level: 'error', file: './logs/error.log' }
+         */
+        logger?: {
+            /**
+             * 记录最低级别 fatal > error > warn > info
+             */
+            level: "fatal" | "error" | "warn" | "info";
+    
+            /**
+             * 日志存储文件地址
+             */
+            file?: string;
+        } | false;
+    };
 
     /**
      * 路由目录地址
@@ -466,6 +535,76 @@ export function NeedAuth(level: GledeAuthLevel): (target: any, name: any) => voi
  * 设置页签校验, 防止中间人截获请求体并篡改
  */
 export function NeedSign(): (target: any, name: any) => void;
+
+/**
+ * 设置preHandler处理multipart/form-data类型
+ * @param opts const upload = new multer(opts)
+ * @param getOpts upload.single/array/fields()
+ */
+export function Multer(opts: MulterOpts, getOpts: MulterGetOpts): (target: any, name: any) => void;
+
+export type FileFilterCallback = (error: Error | null, acceptFile?: boolean) => void;
+
+export type FileFilter = (req: FastifyRequest, file: GledeReqFile, callback: FileFilterCallback) => void;
+
+export interface MulterOpts {
+  /** The destination directory for the uploaded files. */
+  dest?: string;
+  /** The storage engine to use for uploaded files. */
+  storage?: StorageEngine;
+  /**
+   * An object specifying the size limits of the following optional properties. This object is passed to busboy
+   * directly, and the details of properties can be found on https://github.com/mscdex/busboy#busboy-methods
+   */
+  limits?: {
+    /** Max field name size (Default: 100 bytes) */
+    fieldNameSize?: number;
+    /** Max field value size (Default: 1MB) */
+    fieldSize?: number;
+    /** Max number of non- file fields (Default: Infinity) */
+    fields?: number;
+    /** For multipart forms, the max file size (in bytes)(Default: Infinity) */
+    fileSize?: number;
+    /** For multipart forms, the max number of file fields (Default: Infinity) */
+    files?: number;
+    /** For multipart forms, the max number of parts (fields + files)(Default: Infinity) */
+    parts?: number;
+    /** For multipart forms, the max number of header key=> value pairs to parse Default: 2000(same as node's http). */
+    headerPairs?: number;
+  };
+  /** Keep the full path of files instead of just the base name (Default: false) */
+  preservePath?: boolean;
+  /** A function to control which files to upload and which to skip. */
+  fileFilter?: FileFilter;
+}
+
+export type MulterGetOpts = {
+    /**
+     * 需要取用的data.body上的字段, 会挂载到 GledeReqData['file']
+     */
+    single: string;
+} | {
+    /**
+     * 需要取用的data.body上的字段, 会挂载到 GledeReqData['files']['name']
+     */
+    name: string;
+    maxCount: number;
+} | Array<{
+    /**
+     * 需要取用的data.body上的字段, 会挂载到 GledeReqData['files']['name']
+     */
+    name: string;
+    maxCount: number;
+}>;
+
+export interface StorageEngine {
+  _handleFile(
+    req: FastifyRequest,
+    file: GledeReqFile,
+    callback: (error?: Error | null, info?: Partial<GledeReqFile>) => void,
+  ): void
+  _removeFile(req: FastifyRequest, file: GledeReqFile, callback: (error?: Error | null) => void): void
+}
 
 /** 路由基类 */
 export abstract class GledeRouter {
@@ -773,7 +912,8 @@ interface GSDUtil {
   Cors: typeof Cors;
   NeedAuth: typeof NeedAuth;
   NeedSign: typeof NeedSign;
-  GledeRouter: typeof GledeRouter; 
+  Multer: typeof Multer;
+  GledeRouter: typeof GledeRouter;
 }
 
 declare global {

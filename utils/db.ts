@@ -97,7 +97,7 @@ export function Model<T, K>(
 
     return mongoose.model(
         name, 
-        schema instanceof Schema ? schema : new Schema(schema, options),
+        schema instanceof Schema ? schema : new Schema(schema as any, options as any),
         opts?.collection
     );
 }

@@ -33,12 +33,9 @@ const {
 
 export default {
     host: '0.0.0.0',
-    port: 3020,
-    logger: {
-        level: 'error',
-        file: 'tests/logs/error.log'
-    },
-    routerDir: 'tests/routers',
+    port: 3021,
+    logger: false,
+    routerDir: './routers',
     infoDir: 'tests/logs',
     apiDocs: {
         openapi: {

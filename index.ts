@@ -19,6 +19,10 @@ import {
     Logger
 } from './utils';
 
+import mongoose from 'mongoose';
+import Redis from 'ioredis';
+import pg from 'pg';
+
 export const GledeStaticUtil = {
     getRedisInstance,
     getMongoInstance,
@@ -44,8 +48,10 @@ export const GledeUtil = {
 export { Server } from './libs/init';
 export { printRouters } from './libs/route';
 export { GledeRouter, getServerInstance } from './libs/base';
-export { Get, Post, Cors, NeedAuth, NeedSign } from './libs/decorator';
+export { Get, Post, Cors, NeedAuth, NeedSign, Multer } from './libs/decorator';
 export { Schema, ObjectId, Model, Transaction } from './utils';
-export * as mongoose from 'mongoose';
-export * as Redis from 'ioredis';
-export * as pg from 'pg';
+// export * as mongoose from 'mongoose';
+// export * as Redis from 'ioredis';
+// export * as pg from 'pg';
+
+export { mongoose, Redis, pg };

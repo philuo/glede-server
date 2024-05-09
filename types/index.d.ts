@@ -22,6 +22,21 @@ declare interface GledeReqData {
     query: Record<string, any> & TokenParam;
     body: Record<string, any> & TokenParam;
     params: Record<string, any>;
+    /**
+     * multipart/form-data single file
+     * - 使用`@Multer({}, { single: '$fieldName' })`
+     * - this.file -> GledeReqFile
+     */
+    file: GledeReqFile;
+
+    /**
+     * multipart/form-data multi files
+     * - 使用 `@Multer({}, { array: '$fieldName', maxCount: 5 })`
+     * - 使用 `@Multer({}, [{ name: '$filedName1', maxCount: 5 }, { name: '$filedName2', maxCount: 1 }] })`
+     * - this.files['$filedName1'] -> GledeReqFile[];
+     * - this.files['$filedName2'][0] -> GledeReqFile
+     */
+    files: FilesInRequest;
 }
 
 declare type GledeSupportMethod = 'GET' | 'POST';
@@ -206,6 +221,30 @@ declare interface GledeServerOpts {
     } | false;
 
     /**
+     * Fastify配置
+     */
+    appConf?: {
+        /** 请求体最大字节数, 默认1MB */
+        bodyLimit: number;
+
+        /**
+         * Fastify日志配置
+         * Default: { level: 'error', file: './logs/error.log' }
+         */
+        logger?: {
+            /**
+             * 记录最低级别 fatal > error > warn > info
+             */
+            level: "fatal" | "error" | "warn" | "info";
+    
+            /**
+             * 日志存储文件地址
+             */
+            file?: string;
+        } | false;
+    };
+
+    /**
      * 路由目录地址
      * Default: routers
      */
@@ -308,7 +347,44 @@ declare interface GledeThis {
      * 指定字段, 查看是否存在于响应头中
      */
     hasHeader: (key: string) => void;
+
+    /**
+     * Fastify.Request
+     */
+    req: GledeRequest;
+    /**
+     * Fastify.Request
+     */
+    res: GledeReply;
 }
+
+interface GledeReqFile {
+    /** Field name specified in the form */
+    fieldname: string;
+    /** Name of the file on the user's computer */
+    originalname: string;
+    /** Encoding type of the file */
+    encoding: string;
+    /** Mime type of the file */
+    mimetype: string;
+    /** Size of the file in bytes */
+    size?: number;
+    /** The folder to which the file has been saved (DiskStorage) */
+    destination?: string;
+    /** The name of the file within the destination (DiskStorage) */
+    filename?: string;
+    /** Location of the uploaded file (DiskStorage) */
+    path?: string;
+    /** A Buffer of the entire file (MemoryStorage) */
+    buffer?: Buffer;
+    stream?: NodeJS.ReadableStream;
+}
+
+type GledeReqFilesObject = {
+    [fieldname: string]: Partial<File>[];
+}
+
+type FilesInRequest = GledeReqFilesObject | Partial<GledeReqFile>[];
 
 type JsonSchemaCombineType = 'array' | 'object';
 type JsonSchemaNumericType = 'string' | 'number' | 'integer';

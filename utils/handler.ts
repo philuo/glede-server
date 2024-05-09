@@ -59,6 +59,8 @@ export function __genHandlerUtils(req: FastifyRequest, res: FastifyReply) {
         },
         hasHeader: res.hasHeader.bind(res),
         setHeader: res.header.bind(res),
-        removeHeader: res.removeHeader.bind(res)
+        removeHeader: res.removeHeader.bind(res),
+        req,
+        res
     };
 }
