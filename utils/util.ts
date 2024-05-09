@@ -6,6 +6,8 @@
 
 import { readFileSync } from 'fs';
 import { join, resolve } from 'path';
+// @ts-ignore
+import { customAlphabet } from 'nanoid';
 
 /**
  * HTTP通信 [JSON校验](https://json-schema.apifox.cn/#数据类型)
@@ -125,4 +127,19 @@ export function __checkType(target: any, type: string) {
     }
 
     return `[object ${type}]` === Object.prototype.toString.call(target).toLowerCase();
+}
+
+const _alphabetDict = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+const _alphabet = customAlphabet(_alphabetDict, 11);
+const _lowerChar = customAlphabet('abcdefghijklmnopqrstuvwxyz', 1);
+
+/**
+ * 生成随机文件名, 保证第一位是小写字母
+ */
+export function __genRandomFilename(size: number = 12) {
+    if (size === 12) {
+        return _lowerChar() + _alphabet();
+    }
+
+    return _lowerChar() + customAlphabet(_alphabetDict, size - 1)();
 }

@@ -4,7 +4,7 @@
  * @author Perfumere
  */
 
-import { resolve } from 'path';
+import { resolve, parse as parseFilePath } from 'path';
 import { readdirSync, existsSync, writeFile } from 'fs';
 import multer from 'fastify-multer';
 import {
@@ -16,7 +16,8 @@ import {
     __genSymbol,
     __genUrl,
     __checkType,
-    __throwError
+    __throwError,
+    __genRandomFilename
 } from '../utils';
 import { GledeRouter, getServerInstance } from './base';
 import { __preprocessRouter, __preprocessCors, __preprocessSign } from '../plugins';
@@ -62,7 +63,7 @@ function __registryReadyCb(
     cb: (_: Error, adr: string) => void
 ) {
     const callback = __checkType(cb, 'function')
-                ? cb : (_, adr) => !_ && console.log(`GledeServer is running at ${adr}`);
+        ? cb : (_, adr) => !_ && console.log(`GledeServer is running at ${adr}`);
 
     app.listen({ port: opts.port, host: opts.host }, callback);
     app.ready(_ => {
@@ -160,7 +161,25 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
         }
 
         if (multipart) {
-            const upload = multer(multipart.opts);
+            const multerOpts = Object.assign({}, multipart.opts);
+
+            if (!multerOpts.storage && !multerOpts.dest) {
+                if (multerOpts.storageOpts) {
+                    multerOpts.storage = multer.diskStorage(multerOpts.storageOpts);
+                    delete multerOpts.storageOpts;
+                }
+                else {
+                    multerOpts.storage = multer.diskStorage({
+                        destination: 'tmp',
+                        filename(_, file, cb) {
+                            const { ext } = parseFilePath(file.originalname || '');
+                            cb(null, `${__genRandomFilename()}${ext}`);
+                        }
+                    });
+                }
+            }
+
+            const upload = multer(multerOpts);
             const getOpts = multipart.getOpts;
             let preHandler: any;
 
@@ -214,9 +233,9 @@ function __genRouterHandler(handler) {
             if (!__preprocessRouter(req, res, handler)) {
                 return PREHANDL_ERR;
             }
-    
+
             const { body, params, query } = req;
-    
+
             const processRes = await handler.call(
                 __genHandlerUtils(req, res),
                 {
@@ -229,11 +248,11 @@ function __genRouterHandler(handler) {
                     files: req.files
                 }
             );
-    
+
             if (processRes === undefined || processRes === null) {
                 return SUCCESS_EMPTY;
             }
-    
+
             return processRes;
         }
     }
