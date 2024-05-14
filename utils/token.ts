@@ -130,7 +130,7 @@ export function __isValidToken(req: FastifyRequest, token: string, auth: number)
         if (req.method === 'GET') {
             req.query['_token'] = data;
         }
-        else if (req.method === 'POST') {
+        else if (req.method === 'POST' && req.body) {
             req.body['_token'] = data;
         }
 

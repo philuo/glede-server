@@ -22,7 +22,6 @@ import {
 import { GledeRouter, getServerInstance } from './base';
 import { __preprocessRouter, __preprocessCors, __preprocessSign } from '../plugins';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-
 /**
  * 获取路由信息, 默认记录在logs/routers.txt
  */
@@ -160,6 +159,8 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
             });
         }
 
+        let preHandler: any;
+
         if (multipart) {
             const multerOpts = Object.assign({}, multipart.opts);
 
@@ -181,7 +182,6 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
 
             const upload = multer(multerOpts);
             const getOpts = multipart.getOpts;
-            let preHandler: any;
 
             if (getOpts.single) {
                 preHandler = upload.single(getOpts.single);
@@ -196,9 +196,22 @@ function __genRouter(app: FastifyInstance, target: Function, type: string, path:
             if (__checkType(getOpts, 'array')) {
                 preHandler = upload.fields(getOpts);
             }
-
-            router.preHandler = preHandler;
         }
+
+        router.preHandler = function (req, res, next) {
+            if (!__preprocessSign(req, res, handler)) {
+                return res.send(SIGN_ERR);
+            }
+            if (!__preprocessRouter(req, res, handler)) {
+                return res.send(PREHANDL_ERR);
+            }
+            if (preHandler) {
+                preHandler(req, res, next);
+            }
+            else {
+                next();
+            }
+        };
 
         app.route(router);
     }
@@ -227,13 +240,6 @@ const SUCCESS_EMPTY = {
 function __genRouterHandler(handler) {
     if (__checkType(handler, 'asyncfunction')) {
         return async (req: FastifyRequest, res: FastifyReply) => {
-            if (!__preprocessSign(req, res, handler)) {
-                return SIGN_ERR;
-            }
-            if (!__preprocessRouter(req, res, handler)) {
-                return PREHANDL_ERR;
-            }
-
             const { body, params, query } = req;
 
             const processRes = await handler.call(
@@ -258,18 +264,19 @@ function __genRouterHandler(handler) {
     }
 
     return (req: FastifyRequest, res: FastifyReply) => {
-        if (!__preprocessSign(req, res, handler)) {
-            return SIGN_ERR;
-        }
-        if (!__preprocessRouter(req, res, handler)) {
-            return PREHANDL_ERR;
-        }
-
         const { body, params, query } = req;
 
         const processRes = handler.call(
             __genHandlerUtils(req, res),
-            { body, params, query }
+            {
+                body,
+                params,
+                query,
+                // @ts-ignore
+                file: req.file,
+                // @ts-ignore
+                files: req.files
+            }
         );
 
         if (processRes === undefined || processRes === null) {
