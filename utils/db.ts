@@ -48,14 +48,15 @@ export function __initPg(url: string, opts: PgPoolOptions) {
     if (!pgClient) {
         pgClient = new Pool({
             connectionString: url,
-            max: 30,
-            min: 10,
+            max: 20,
+            min: 5,
             keepAlive: true,
             idleTimeoutMillis: 600000,
             connectionTimeoutMillis: 20000,
             query_timeout: 30000,
             statement_timeout: 40000,
             idle_in_transaction_session_timeout: 60000,
+            keepAliveInitialDelayMillis: 300000,
             ...opts
         });
     }
